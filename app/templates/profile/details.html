@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}My profile · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex-1 bg-sky-soft px-6 py-12">
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-3xl font-extrabold">My profile</h1>
+      <p class="mt-1 text-muted">Your account details.</p>
+
+      {% if profile %}
+        <section class="card mt-8 overflow-hidden">
+          <dl class="divide-y divide-line">
+            <div class="grid grid-cols-1 gap-1 px-8 py-5 sm:grid-cols-3">
+              <dt class="text-sm font-bold">Name</dt>
+              <dd class="text-muted sm:col-span-2">{{ profile.name }}</dd>
+            </div>
+            <div class="grid grid-cols-1 gap-1 px-8 py-5 sm:grid-cols-3">
+              <dt class="text-sm font-bold">Surname</dt>
+              <dd class="text-muted sm:col-span-2">{{ profile.surname }}</dd>
+            </div>
+            <div class="grid grid-cols-1 gap-1 px-8 py-5 sm:grid-cols-3">
+              <dt class="text-sm font-bold">Email</dt>
+              <dd class="text-muted sm:col-span-2">{{ profile.email }}</dd>
+            </div>
+            <div class="grid grid-cols-1 gap-1 px-8 py-5 sm:grid-cols-3">
+              <dt class="text-sm font-bold">User ID</dt>
+              <dd class="font-mono text-sm break-all text-muted sm:col-span-2">{{ profile.id }}</dd>
+            </div>
+          </dl>
+        </section>
+      {% else %}
+        <section class="alert-warning mt-8 p-6">
+          <p class="font-bold">No profile found for {{ email }}.</p>
+          <p class="mt-1 text-sm">You are signed in, but there is no user record with this email address.</p>
+        </section>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

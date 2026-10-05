@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cupcakes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cupcakes}
+      POSTGRES_DB: ${POSTGRES_DB:-cupcakes}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    # Dev mode (HTTP, embedded file DB). Realm is imported on first start only.
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      # Tokens always carry the browser-facing issuer, even when the web container
+      # calls Keycloak over the Docker network as http://keycloak:8080
+      KC_HOSTNAME: http://localhost:8080
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      - ./keycloak/realm-cupcakes.json:/opt/keycloak/data/import/realm-cupcakes.json:ro
+
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-cupcakes}:${POSTGRES_PASSWORD:-cupcakes}@db:5432/${POSTGRES_DB:-cupcakes}
+      SECRET_KEY: ${SECRET_KEY:-change-me}
+      KEYCLOAK_PUBLIC_URL: http://localhost:8080
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: cupcakes
+      KEYCLOAK_CLIENT_ID: cupcakes-web
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-cupcakes-web-secret}
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+volumes:
+  db-data:
+  keycloak-data:

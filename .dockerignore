@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.env
+.git
+.gitignore
+.vscode/
+.idea/
+.venv/
+node_modules/
+app/static/css/
+docker-compose.yml
+keycloak/

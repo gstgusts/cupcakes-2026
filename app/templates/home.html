@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="grid flex-1 lg:grid-cols-2">
+    <section class="flex flex-col items-center justify-center gap-10 bg-sky-soft px-6 py-16 text-center">
+      <h1 class="text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl">
+        <span class="block text-brand">Plan better.</span>
+        <span class="block text-accent">Bake smarter.</span>
+      </h1>
+      <div class="text-[9rem] leading-none drop-shadow-sm" aria-hidden="true">🧁</div>
+    </section>
+
+    <section class="flex items-center justify-center px-6 py-16">
+      <div class="card w-full max-w-md p-8 sm:p-10">
+        <h2 class="text-3xl font-extrabold">Welcome back</h2>
+        <p class="mt-1 text-muted">Sign in to start planning your cupcake business.</p>
+        <a class="btn-primary mt-8 w-full" href="{{ url_for('auth.login') }}">Sign in</a>
+      </div>
+    </section>
+  </div>
+{% endblock %}

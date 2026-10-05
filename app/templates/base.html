@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Cupcake Business{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  </head>
+  <body class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
+    <header class="border-b border-line bg-white">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <a class="flex items-center gap-3" href="{{ url_for('home') }}">
+          <span class="text-3xl leading-none" aria-hidden="true">🧁</span>
+          <span class="text-xl font-extrabold text-brand">Cupcake Business</span>
+        </a>
+        <div class="flex items-center gap-8">
+          <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+          {% if current_user %}
+            <a class="nav-link" href="{{ url_for('profile.details') }}">My profile</a>
+            <a class="nav-link-active" href="{{ url_for('auth.logout') }}">Sign out</a>
+          {% else %}
+            <a class="nav-link-active" href="{{ url_for('auth.login') }}">Sign in</a>
+          {% endif %}
+        </div>
+      </nav>
+    </header>
+
+    <main class="flex flex-1 flex-col">
+      {% if error %}
+        <div class="mx-auto max-w-6xl px-6 pt-6">
+          <div class="alert-error">{{ error }}</div>
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

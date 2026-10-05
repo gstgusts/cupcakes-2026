@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.idea/
+.vscode/
+node_modules/
+# Built by Tailwind (npm run build:css)
+app/static/css/

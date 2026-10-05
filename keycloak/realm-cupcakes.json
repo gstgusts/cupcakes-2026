@@ -1,0 +1,57 @@
+{
+  "realm": "cupcakes",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "sslRequired": "external",
+  "clients": [
+    {
+      "clientId": "cupcakes-web",
+      "name": "Cupcakes Flask web app",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "cupcakes-web-secret",
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "rootUrl": "http://localhost:5000",
+      "redirectUris": ["http://localhost:5000/auth/callback", "http://127.0.0.1:5000/auth/callback"],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5000/*##http://127.0.0.1:5000/*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "user1",
+      "enabled": true,
+      "email": "user1@example.com",
+      "emailVerified": true,
+      "firstName": "User",
+      "lastName": "One",
+      "credentials": [{ "type": "password", "value": "sOhM^8s19eMp", "temporary": false }]
+    },
+    {
+      "username": "user2",
+      "enabled": true,
+      "email": "user2@example.com",
+      "emailVerified": true,
+      "firstName": "User",
+      "lastName": "Two",
+      "credentials": [{ "type": "password", "value": "R4hoc6C_oth2", "temporary": false }]
+    },
+    {
+      "username": "user3",
+      "enabled": true,
+      "email": "user3@example.com",
+      "emailVerified": true,
+      "firstName": "User",
+      "lastName": "Three",
+      "credentials": [{ "type": "password", "value": "5BRN7UC9Zs7@", "temporary": false }]
+    }
+  ]
+}

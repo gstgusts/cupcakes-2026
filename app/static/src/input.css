@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@source "../../templates";
+
+/* Brand palette and font (usable as bg-brand, text-ink, bg-sky-soft, ...) */
+@theme {
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #0a7cf0;
+  --color-brand-dark: #0866c6;
+  --color-accent: #f2557f;
+  --color-ink: #0b1f4b;
+  --color-muted: #5b6475;
+  --color-sky-soft: #dcf0fc;
+  --color-line: #dfe5ee;
+}
+
+@layer components {
+  .nav-link {
+    @apply font-semibold text-slate-600 transition hover:text-ink;
+  }
+  .nav-link-active {
+    @apply font-semibold text-brand hover:text-brand-dark;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-brand px-5 py-3 font-bold text-white shadow-sm transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-line bg-white px-4 py-2 font-semibold text-ink transition hover:bg-slate-50;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-white shadow-sm;
+  }
+
+  .alert-error {
+    @apply rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800;
+  }
+  .alert-warning {
+    @apply rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900;
+  }
+}

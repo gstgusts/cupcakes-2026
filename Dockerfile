@@ -3,8 +3,8 @@
 # --- CSS: compile Tailwind from the classes used in the templates
 FROM node:22-alpine AS css
 WORKDIR /build
-COPY package.json ./
-RUN npm install --no-audit --no-fund
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 COPY app ./app
 RUN npm run build:css
 

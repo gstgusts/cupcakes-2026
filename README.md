@@ -67,22 +67,33 @@ flask --app run db upgrade
 
 Review the generated file in `migrations/versions` before committing it.
 
-## Local development (without the web container)
+## Local development and debugging (Flask outside Docker)
+
+Run PostgreSQL and Keycloak in Docker, and Flask itself on your machine so you can use the debugger.
 
 ```sh
-docker compose up -d db keycloak
-
-.\setup-venv.ps1                # Windows; macOS/Linux/Git Bash: ./setup-venv.sh
+.\setup-venv.ps1                # once; macOS/Linux/Git Bash: ./setup-venv.sh
 .venv\Scripts\Activate.ps1      # macOS/Linux: source .venv/bin/activate
 
-npm install
-npm run watch:css               # keep running in a separate terminal
-
-flask --app run db upgrade
-python run.py                   # http://127.0.0.1:5000
+.\start-deps.ps1                # macOS/Linux/Git Bash: ./start-deps.sh
+flask --app run db upgrade      # first time and after pulling new migrations
+flask --app run run --debug     # http://localhost:5000
 ```
 
+`start-deps` does the following:
+
+1. stops the `web` container if it is running (it would occupy port 5000),
+2. starts `db` and `keycloak`,
+3. builds the Tailwind CSS into `app/static/css/app.css` with a Node container (`docker compose run --rm css`), so Node.js is not needed locally,
+4. waits until Keycloak is ready.
+
+Run it again (or just `docker compose run --rm css`) after adding new Tailwind classes to templates.
+
 Defaults in `config.py` point to Postgres and Keycloak on `localhost`, so no extra environment variables are needed.
+
+### Debugging in VS Code
+
+Select the `.venv` interpreter (*Python: Select Interpreter*), then press **F5** and pick **Flask (debug)**. It runs `start-deps` first (VS Code task *Start dependencies*) and then starts Flask under the debugger, so breakpoints work in Python code and Jinja templates. Use **Flask (debug, skip dependencies)** when the containers are already running.
 
 ### Python virtual environment
 

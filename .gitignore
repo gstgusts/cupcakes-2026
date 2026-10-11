@@ -3,7 +3,10 @@ __pycache__/
 *.pyc
 .venv/
 .idea/
-.vscode/
+# Share only the debug setup, not personal editor settings
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 node_modules/
 # Built by Tailwind (npm run build:css)
 app/static/css/

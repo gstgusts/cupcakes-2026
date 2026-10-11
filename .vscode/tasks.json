@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start dependencies",
+      "type": "shell",
+      "command": "./start-deps.sh",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File .\\start-deps.ps1"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

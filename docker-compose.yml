@@ -53,6 +53,19 @@ services:
       keycloak:
         condition: service_started
 
+  # One-off Tailwind build into app/static/css/app.css for running Flask locally.
+  # Not started by "docker compose up"; run with: docker compose run --rm css
+  css:
+    image: node:22-alpine
+    profiles: ["tools"]
+    working_dir: /src
+    command: sh -c "npm ci --no-audit --no-fund && npm run build:css"
+    volumes:
+      - .:/src
+      # Keeps node_modules out of the project folder
+      - css-node-modules:/src/node_modules
+
 volumes:
   db-data:
   keycloak-data:
+  css-node-modules:

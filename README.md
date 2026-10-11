@@ -5,8 +5,11 @@ Server-rendered Flask web app with PostgreSQL, Alembic migrations (Flask-Migrate
 ## Run
 
 ```sh
-docker compose up -d --build
+./start.sh        # macOS/Linux/Git Bash
+.\start.ps1       # Windows PowerShell
 ```
+
+Both scripts run `docker compose up -d --build` from the project folder. Stop everything with `docker compose down`.
 
 | Service  | URL                    | Notes                                             |
 |----------|------------------------|---------------------------------------------------|
@@ -16,10 +19,10 @@ docker compose up -d --build
 
 Sample users in the `cupcakes` realm (see `keycloak/realm-cupcakes.json`):
 
-| Username | Password | Has profile in DB |
-|----------|----------|-------------------|
-| `user1`  | `sOhM^8s19eMp` | yes               |
-| `user2`  | `R4hoc6C_oth2` | yes               |
+| Username | Password       | Has profile in DB                      |
+|----------|----------------|----------------------------------------|
+| `user1`  | `sOhM^8s19eMp` | yes                                    |
+| `user2`  | `R4hoc6C_oth2` | yes                                    |
 | `user3`  | `5BRN7UC9Zs7@` | no (shows the "no profile found" page) |
 
 The realm is imported only on Keycloak's first start. After changing the realm file, reset it with `docker compose down -v` (this also wipes the database).

@@ -11,6 +11,12 @@ Server-rendered Flask web app with PostgreSQL, Alembic migrations (Flask-Migrate
 
 Both scripts run `docker compose up -d --build` from the project folder. Stop everything with `docker compose down`.
 
+If PowerShell refuses to run the script because of the execution policy, run it like this:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start.ps1
+```
+
 | Service  | URL                    | Notes                                             |
 |----------|------------------------|---------------------------------------------------|
 | Web      | http://localhost:5000  | Flask app; runs `flask db upgrade` on start       |

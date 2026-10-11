@@ -72,9 +72,8 @@ Review the generated file in `migrations/versions` before committing it.
 ```sh
 docker compose up -d db keycloak
 
-python -m venv .venv
-.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
+.\setup-venv.ps1                # Windows; macOS/Linux/Git Bash: ./setup-venv.sh
+.venv\Scripts\Activate.ps1      # macOS/Linux: source .venv/bin/activate
 
 npm install
 npm run watch:css               # keep running in a separate terminal
@@ -84,3 +83,22 @@ python run.py                   # http://127.0.0.1:5000
 ```
 
 Defaults in `config.py` point to Postgres and Keycloak on `localhost`, so no extra environment variables are needed.
+
+### Python virtual environment
+
+`setup-venv.ps1` / `setup-venv.sh` create `.venv` (if it does not exist yet) and install `requirements.txt` into it. When finished, the script prints:
+
+```text
+Done. Activate the environment with:
+  .\.venv\Scripts\Activate.ps1
+```
+
+A script cannot activate the environment in your terminal, so run the printed command yourself:
+
+```sh
+.\.venv\Scripts\Activate.ps1    # Windows PowerShell
+source .venv/Scripts/activate   # Git Bash on Windows
+source .venv/bin/activate       # macOS/Linux
+```
+
+The prompt then starts with `(.venv)`. Run `deactivate` to leave the environment. If PowerShell blocks `Activate.ps1` because of the execution policy, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.

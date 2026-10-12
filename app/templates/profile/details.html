@@ -3,8 +3,15 @@
 {% block content %}
   <div class="flex-1 bg-sky-soft px-6 py-12">
     <div class="mx-auto max-w-3xl">
-      <h1 class="text-3xl font-extrabold">My profile</h1>
-      <p class="mt-1 text-muted">Your account details.</p>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-extrabold">My profile</h1>
+          <p class="mt-1 text-muted">Your account details.</p>
+        </div>
+        {% if profile %}
+          <a class="btn-secondary" href="{{ url_for('profile.edit') }}">Edit profile</a>
+        {% endif %}
+      </div>
 
       {% if profile %}
         <section class="card mt-8 overflow-hidden">
@@ -31,6 +38,7 @@
         <section class="alert-warning mt-8 p-6">
           <p class="font-bold">No profile found for {{ email }}.</p>
           <p class="mt-1 text-sm">You are signed in, but there is no user record with this email address.</p>
+          <a class="btn-primary mt-5" href="{{ url_for('profile.edit') }}">Create profile</a>
         </section>
       {% endif %}
     </div>

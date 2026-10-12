@@ -34,6 +34,8 @@ def callback():
         "sub": claims["sub"],
         "username": claims.get("preferred_username", ""),
         "name": claims.get("name", ""),
+        "first_name": claims.get("given_name", ""),
+        "last_name": claims.get("family_name", ""),
         "email": email,
         # Keycloak realm roles, mapped into the ID token as the "roles" claim
         "roles": claims.get("roles", []),

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Add user · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex flex-1 items-start justify-center bg-sky-soft px-6 py-12">
+    <div class="card w-full max-w-xl p-8 sm:p-10">
+      <h1 class="text-3xl font-extrabold">Add user</h1>
+      <p class="mt-1 text-muted">Creates the Keycloak account and the user profile.</p>
+
+      <form method="post" class="mt-8 space-y-5" novalidate>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="label" for="name">First name</label>
+            <input class="input {{ 'input-invalid' if errors.name }}" id="name" name="name"
+                   value="{{ form.name or '' }}" maxlength="100" autocomplete="off" autofocus>
+            {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="label" for="surname">Last name</label>
+            <input class="input {{ 'input-invalid' if errors.surname }}" id="surname" name="surname"
+                   value="{{ form.surname or '' }}" maxlength="100" autocomplete="off">
+            {% if errors.surname %}<p class="field-error">{{ errors.surname }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label class="label" for="email">Email address</label>
+          <input class="input {{ 'input-invalid' if errors.email }}" id="email" name="email" type="email"
+                 value="{{ form.email or '' }}" maxlength="255" autocomplete="off">
+          {% if errors.email %}<p class="field-error">{{ errors.email }}</p>{% endif %}
+        </div>
+
+        <p class="rounded-lg bg-sky-soft px-4 py-3 text-sm text-muted">
+          A temporary password is generated and shown once after the user is created.
+          The user must set a new password at first sign-in.
+        </p>
+
+        <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+          <a class="btn-secondary" href="{{ url_for('users.index') }}">Cancel</a>
+          <button type="submit" class="btn-primary">Create user</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

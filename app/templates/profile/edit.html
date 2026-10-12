@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Create profile' if is_new else 'Edit profile' }} · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex flex-1 items-start justify-center bg-sky-soft px-6 py-12">
+    <div class="card w-full max-w-xl p-8 sm:p-10">
+      <h1 class="text-3xl font-extrabold">{{ 'Create your profile' if is_new else 'Edit profile' }}</h1>
+      <p class="mt-1 text-muted">
+        {{ 'Enter your name to finish setting up your account.' if is_new else 'Update your name.' }}
+      </p>
+
+      <form method="post" class="mt-8 space-y-5" novalidate>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="label" for="name">First name</label>
+            <input class="input {{ 'input-invalid' if errors.name }}" id="name" name="name"
+                   value="{{ form.name or '' }}" maxlength="100" autocomplete="given-name" autofocus>
+            {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="label" for="surname">Last name</label>
+            <input class="input {{ 'input-invalid' if errors.surname }}" id="surname" name="surname"
+                   value="{{ form.surname or '' }}" maxlength="100" autocomplete="family-name">
+            {% if errors.surname %}<p class="field-error">{{ errors.surname }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label class="label" for="email">Email address</label>
+          <input class="input cursor-not-allowed bg-slate-50 text-muted" id="email" value="{{ email }}" readonly>
+          <p class="mt-1.5 text-sm text-muted">Comes from your sign-in account and cannot be changed here.</p>
+        </div>
+
+        <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+          <a class="btn-secondary" href="{{ url_for('profile.details') }}">Cancel</a>
+          <button type="submit" class="btn-primary">{{ 'Create profile' if is_new else 'Save changes' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}User created · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex flex-1 items-start justify-center bg-sky-soft px-6 py-12">
+    <div class="card w-full max-w-xl p-8 sm:p-10">
+      <h1 class="text-3xl font-extrabold">User created</h1>
+      <p class="mt-1 text-muted">{{ user.name }} {{ user.surname }} can now sign in with:</p>
+
+      <dl class="mt-8 space-y-4">
+        <div>
+          <dt class="label">Email (username)</dt>
+          <dd class="text-muted">{{ user.email }}</dd>
+        </div>
+        <div>
+          <dt class="label">Temporary password</dt>
+          <dd class="rounded-lg border border-line bg-slate-50 px-4 py-3 font-mono text-lg tracking-wide select-all">{{ password }}</dd>
+        </div>
+      </dl>
+
+      <p class="alert-warning mt-6 text-sm">
+        Copy the password now and share it securely. It is not shown again.
+        The user has to choose a new password at first sign-in.
+      </p>
+
+      <div class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <a class="btn-secondary" href="{{ url_for('users.new') }}">Add another user</a>
+        <a class="btn-primary" href="{{ url_for('users.index') }}">Back to users</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

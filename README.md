@@ -46,12 +46,26 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 
 - `/` – welcome page (redirects to the profile when logged in)
 - `/profile` – profile details of the logged-in user
+- `/users` – user list with search (`admin` role only)
+- `/users/new` – add a user (`admin` role only)
 - `/auth/login`, `/auth/callback`, `/auth/logout`
+
+## Adding users (Keycloak Admin API)
+
+There is no self-registration: an admin adds users on `/users/new`.
+
+1. The form is validated (required fields, lengths, email format).
+2. The email must not exist yet, neither as a user profile in our database nor as a Keycloak account.
+3. The app creates the Keycloak user through the Keycloak Admin REST API (`app/keycloak_admin.py`) with a generated temporary password, then saves the user profile. If saving the profile fails, the Keycloak user is deleted again.
+4. The temporary password is shown once to the admin. Keycloak asks the new user to set their own password at first sign-in.
+
+The app calls the Admin API as the service account of the `cupcakes-web` client (client credentials grant). In `keycloak/realm-cupcakes.json` the service account has only the `realm-management` roles `manage-users` and `view-users`.
 
 ## Project layout
 
 - `app/models` – SQLAlchemy models (`User` with UUID `id`, `name`, `surname`, `email`)
-- `app/web` – blueprints (`auth`, `profile`)
+- `app/web` – blueprints (`auth`, `profile`, `user`)
+- `app/keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
 - `app/auth.py` – Keycloak client registration and `login_required`
 - `app/templates` – Jinja templates styled with Tailwind
 - `app/static/src/input.css` – Tailwind entry; compiled to `app/static/css/app.css` in the Docker build

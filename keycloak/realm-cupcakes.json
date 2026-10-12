@@ -31,6 +31,7 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
       "rootUrl": "http://localhost:5000",
       "redirectUris": ["http://localhost:5000/auth/callback", "http://127.0.0.1:5000/auth/callback"],
       "webOrigins": ["+"],
@@ -58,6 +59,14 @@
     }
   ],
   "users": [
+    {
+      "username": "service-account-cupcakes-web",
+      "enabled": true,
+      "serviceAccountClientId": "cupcakes-web",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users"]
+      }
+    },
     {
       "username": "user1",
       "enabled": true,

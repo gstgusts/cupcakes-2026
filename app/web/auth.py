@@ -35,6 +35,8 @@ def callback():
         "username": claims.get("preferred_username", ""),
         "name": claims.get("name", ""),
         "email": email,
+        # Keycloak realm roles, mapped into the ID token as the "roles" claim
+        "roles": claims.get("roles", []),
     }
     # Lets Keycloak end the session without asking for confirmation on logout
     session["id_token"] = token.get("id_token")

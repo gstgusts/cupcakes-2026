@@ -1,7 +1,7 @@
 from functools import wraps
 
 from authlib.integrations.flask_client import OAuth
-from flask import redirect, session, url_for
+from flask import abort, redirect, session, url_for
 
 oauth = OAuth()
 
@@ -35,6 +35,12 @@ def current_user():
     return session.get("user")
 
 
+def has_role(role):
+    """True if the logged-in user has the given Keycloak realm role."""
+    user = current_user()
+    return user is not None and role in user.get("roles", [])
+
+
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -43,3 +49,19 @@ def login_required(view):
         return view(*args, **kwargs)
 
     return wrapped
+
+
+def role_required(role):
+    """Like login_required, but also requires a Keycloak realm role (403 otherwise)."""
+    def decorator(view):
+        @wraps(view)
+        def wrapped(*args, **kwargs):
+            if current_user() is None:
+                return redirect(url_for("auth.login"))
+            if not has_role(role):
+                abort(403)
+            return view(*args, **kwargs)
+
+        return wrapped
+
+    return decorator

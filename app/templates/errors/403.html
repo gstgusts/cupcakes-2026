@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Access denied · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex flex-1 items-center justify-center bg-sky-soft px-6 py-16">
+    <div class="card w-full max-w-md p-8 text-center sm:p-10">
+      <h1 class="text-3xl font-extrabold">Access denied</h1>
+      <p class="mt-2 text-muted">You do not have permission to open this page.</p>
+      <a class="btn-primary mt-8 w-full" href="{{ url_for('home') }}">Back to home</a>
+    </div>
+  </div>
+{% endblock %}

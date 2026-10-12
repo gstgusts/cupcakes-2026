@@ -25,11 +25,13 @@ powershell -ExecutionPolicy Bypass -File .\start.ps1
 
 Sample users in the `cupcakes` realm (see `keycloak/realm-cupcakes.json`):
 
-| Username | Password       | Has profile in DB                      |
-|----------|----------------|----------------------------------------|
-| `user1`  | `sOhM^8s19eMp` | yes                                    |
-| `user2`  | `R4hoc6C_oth2` | yes                                    |
-| `user3`  | `5BRN7UC9Zs7@` | no (shows the "no profile found" page) |
+| Username | Password       | Roles           | Has profile in DB                      |
+|----------|----------------|-----------------|----------------------------------------|
+| `user1`  | `sOhM^8s19eMp` | `admin`, `user` | yes                                    |
+| `user2`  | `R4hoc6C_oth2` | `user`          | yes                                    |
+| `user3`  | `5BRN7UC9Zs7@` | `user`          | no (shows the "no profile found" page) |
+
+Realm roles are `admin` and `user`. Every new user gets `user` automatically (realm default role). The roles are included in the ID token as the `roles` claim.
 
 The realm is imported only on Keycloak's first start. After changing the realm file, reset it with `docker compose down -v` (this also wipes the database).
 

@@ -63,7 +63,7 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 
 ## Project layout
 
-- `app/models` – SQLAlchemy models (`User` with UUID `id`, `name`, `surname`, `email`)
+- `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
 - `app/web` – blueprints (`auth`, `profile`, `user`)
 - `app/keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
 - `app/auth.py` – Keycloak client registration and `login_required`

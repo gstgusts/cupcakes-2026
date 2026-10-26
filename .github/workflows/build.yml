@@ -134,3 +134,58 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
+
+  # Example deployment to a VM (e.g. Azure) over SSH. Skipped until it is switched on:
+  # Settings > Secrets and variables > Actions > Variables: DEPLOY_ENABLED = true,
+  # and Secrets: VM_HOST, VM_USER, VM_SSH_KEY. See "Deployment" in README.md.
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read # lets the VM pull the image with this run's token
+    environment:
+      name: production
+      url: https://cupcakes-demo.westeurope.cloudapp.azure.com # placeholder
+    env:
+      VM_HOST: ${{ secrets.VM_HOST }}
+      VM_USER: ${{ secrets.VM_USER }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up SSH key
+        env:
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$VM_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
+
+      # Only the compose setup is copied; the app itself comes as the Docker image from ghcr.io
+      - name: Copy deployment files
+        run: |
+          ssh "$VM_USER@$VM_HOST" "mkdir -p ~/cupcakes"
+          scp deploy/docker-compose.yml deploy/Caddyfile keycloak/realm-cupcakes.json "$VM_USER@$VM_HOST:~/cupcakes/"
+
+      # Pulls the image of exactly this commit (tag sha-xxxxxxx from the build job) and restarts
+      # what changed. Postgres and Keycloak keep their data in volumes; migrations run when web starts.
+      - name: Pull and restart
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The script is sent to the VM over stdin. $TOKEN, $GITHUB_ACTOR and $GITHUB_SHA are
+        # filled in here on the runner before sending, so the heredoc is intentionally unquoted.
+        run: |
+          # shellcheck disable=SC2087
+          ssh "$VM_USER@$VM_HOST" bash -s <<SCRIPT
+            set -e
+            cd ~/cupcakes
+            echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+            export IMAGE_TAG=sha-${GITHUB_SHA::7}
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker logout ghcr.io
+            docker image prune -f
+          SCRIPT

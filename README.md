@@ -113,7 +113,7 @@ Select the `.venv` interpreter (*Python: Select Interpreter*), then press **F5**
 
 ### Python virtual environment
 
-`setup-venv.ps1` / `setup-venv.sh` create `.venv` (if it does not exist yet) and install `requirements.txt` into it. When finished, the script prints:
+`setup-venv.ps1` / `setup-venv.sh` create `.venv` (if it does not exist yet) and install `requirements-dev.txt` (the app requirements plus pytest) into it. When finished, the script prints:
 
 ```text
 Done. Activate the environment with:
@@ -145,3 +145,31 @@ pytest
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).
+
+## Deployment (example: Azure VM)
+
+The `deploy` job in `.github/workflows/build.yml` shows how the app can be deployed automatically after every push to `main`:
+
+```text
+test → build image, push to ghcr.io → deploy: SSH to the VM, docker compose pull, docker compose up -d
+```
+
+It is switched off, because no VM exists yet: the job is skipped unless the repository variable `DEPLOY_ENABLED` is `true`. The URL `cupcakes-demo.westeurope.cloudapp.azure.com` used in the files is a placeholder.
+
+Files in `deploy/` (copied to `~/cupcakes` on the VM by the deploy job):
+
+- `docker-compose.yml` – the production stack: the app image from `ghcr.io` (no build on the VM), PostgreSQL, Keycloak in production mode with its own PostgreSQL, and Caddy as the HTTPS reverse proxy
+- `Caddyfile` – gets an HTTPS certificate automatically and routes `/idp/*` to Keycloak and everything else to the app
+- `.env.example` – domain and passwords; copied once by hand to `~/cupcakes/.env` on the VM (never committed)
+
+Only Caddy is exposed (ports 80 and 443). The app talks to Keycloak and the databases over the Docker network.
+
+To switch it on:
+
+1. Create an Ubuntu VM (Azure B2s, 4 GB RAM, is enough with Keycloak), set a DNS name label on its public IP, and allow ports 22, 80 and 443 in the network security group.
+2. Install Docker on the VM and create `~/cupcakes/.env` from `deploy/.env.example` with real passwords.
+3. Replace the placeholder URL in `.github/workflows/build.yml` and in the `redirectUris` of `keycloak/realm-cupcakes.json` with the VM's DNS name.
+4. Create an SSH key pair for deployments. Add the public key to `~/.ssh/authorized_keys` on the VM.
+5. In GitHub: *Settings > Secrets and variables > Actions*, add secrets `VM_HOST` (DNS name), `VM_USER` and `VM_SSH_KEY` (the private key), and the variable `DEPLOY_ENABLED` = `true`.
+
+After the first deployment, change the `cupcakes-web` client secret in the Keycloak admin console (`https://<domain>/idp/admin`) and put the new value into `.env`. The realm file contains the dev secret and the sample users with known passwords, which should be removed for real use.

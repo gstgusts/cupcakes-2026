@@ -78,7 +78,7 @@ def new():
     # The temporary password is shown only once, on this page
     return render_template("users/created.html", user=user, password=password)
 
-
+# Test if a profile with the given email already exists in our database. Keycloak is checked separately.
 def _profile_exists(email):
     return db.session.query(User.id).filter(func.lower(User.email) == email.lower()).first() is not None
 

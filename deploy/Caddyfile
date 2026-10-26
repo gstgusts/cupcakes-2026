@@ -1,0 +1,12 @@
+# DOMAIN comes from .env (via docker-compose.yml). Caddy requests the HTTPS certificate itself.
+{$DOMAIN} {
+	# Keycloak (login page, tokens, admin console at /idp/admin)
+	handle /idp/* {
+		reverse_proxy keycloak:8080
+	}
+
+	# Everything else goes to the Flask app
+	handle {
+		reverse_proxy web:5000
+	}
+}

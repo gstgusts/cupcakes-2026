@@ -33,11 +33,11 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
       "rootUrl": "http://localhost:5000",
-      "redirectUris": ["http://localhost:5000/auth/callback", "http://127.0.0.1:5000/auth/callback"],
+      "redirectUris": ["http://localhost:5000/auth/callback", "http://127.0.0.1:5000/auth/callback", "https://cupcakes-demo.westeurope.cloudapp.azure.com/auth/callback"],
       "webOrigins": ["+"],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:5000/*##http://127.0.0.1:5000/*"
+        "post.logout.redirect.uris": "http://localhost:5000/*##http://127.0.0.1:5000/*##https://cupcakes-demo.westeurope.cloudapp.azure.com/*"
       },
       "protocolMappers": [
         {

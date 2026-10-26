@@ -1,0 +1,102 @@
+# Production stack for the VM. The GitHub Actions "deploy" job copies this folder to the VM
+# (together with keycloak/realm-cupcakes.json) and runs "docker compose pull && docker compose up -d".
+# Settings and passwords come from .env next to this file (see .env.example), which is created once on the VM.
+#
+# Caddy is the only service reachable from the internet. It gets an HTTPS certificate for DOMAIN
+# automatically and forwards /idp/* to Keycloak and everything else to the Flask app.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - web
+      - keycloak
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cupcakes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: cupcakes
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cupcakes -d cupcakes"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Keycloak gets its own database: in production mode it should not use the embedded dev database
+  keycloak-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?set KEYCLOAK_DB_PASSWORD in .env}
+      POSTGRES_DB: keycloak
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    # Production mode. The realm is imported on first start only (existing realms are skipped).
+    command: start --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD in .env}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      # Served under https://DOMAIN/idp through Caddy, which terminates HTTPS
+      KC_HTTP_RELATIVE_PATH: /idp
+      KC_HOSTNAME: https://${DOMAIN}/idp
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+    volumes:
+      - ./realm-cupcakes.json:/opt/keycloak/data/import/realm-cupcakes.json:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+
+  web:
+    # Built and pushed by GitHub Actions; the deploy job sets IMAGE_TAG to the commit being deployed
+    image: ghcr.io/gstgusts/cupcakes-2026:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://cupcakes:${POSTGRES_PASSWORD}@db:5432/cupcakes
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      KEYCLOAK_PUBLIC_URL: https://${DOMAIN}/idp
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080/idp
+      KEYCLOAK_REALM: cupcakes
+      KEYCLOAK_CLIENT_ID: cupcakes-web
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:?set KEYCLOAK_CLIENT_SECRET in .env}
+      # Lets gunicorn trust X-Forwarded-Proto from Caddy, so login redirect URLs use https://
+      FORWARDED_ALLOW_IPS: "*"
+    depends_on:
+      db:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+volumes:
+  caddy-data:
+  db-data:
+  keycloak-db-data:

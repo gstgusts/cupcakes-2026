@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Creates the .venv virtual environment (if missing) and installs requirements.txt into it
+# Creates the .venv virtual environment (if missing) and installs requirements-dev.txt (app + test tools) into it
 set -e
 cd "$(dirname "$0")"
 
@@ -17,7 +17,7 @@ fi
 if [ -d .venv/Scripts ]; then BIN=.venv/Scripts; else BIN=.venv/bin; fi
 
 "$BIN/python" -m pip install --upgrade pip
-"$BIN/python" -m pip install -r requirements.txt
+"$BIN/python" -m pip install -r requirements-dev.txt
 
 echo ""
 echo "Done. Activate the environment with:"

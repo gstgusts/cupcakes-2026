@@ -129,3 +129,19 @@ source .venv/bin/activate       # macOS/Linux
 ```
 
 The prompt then starts with `(.venv)`. Run `deactivate` to leave the environment. If PowerShell blocks `Activate.ps1` because of the execution policy, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
+
+## Tests
+
+Tests use pytest and need only PostgreSQL (Keycloak is not used: tests log in by writing the identity into the session, and the Keycloak Admin API calls are replaced with fakes).
+
+```sh
+docker compose up -d db
+pytest
+```
+
+`setup-venv.sh` / `setup-venv.ps1` install pytest from `requirements-dev.txt`. The tests use their own database `cupcakes_test` (created automatically and rebuilt from the migrations on every run), so your data in `cupcakes` is not touched. Use a different server with `TEST_DATABASE_URL`.
+
+- `tests/test_validation.py` – form validation and temporary password rules
+- `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
+
+GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

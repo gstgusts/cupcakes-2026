@@ -1,4 +1,4 @@
-# Creates the .venv virtual environment (if missing) and installs requirements.txt into it
+# Creates the .venv virtual environment (if missing) and installs requirements-dev.txt (app + test tools) into it
 Push-Location $PSScriptRoot
 try {
     if (-not (Test-Path .venv)) {
@@ -9,7 +9,7 @@ try {
     }
 
     .\.venv\Scripts\python.exe -m pip install --upgrade pip
-    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+    .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Host ""

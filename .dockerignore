@@ -10,3 +10,6 @@ node_modules/
 app/static/css/
 docker-compose.yml
 keycloak/
+tests/
+pytest.ini
+requirements-dev.txt

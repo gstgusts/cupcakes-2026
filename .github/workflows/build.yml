@@ -1,0 +1,101 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel an older run of the same branch/PR when a new commit arrives
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # push the image to GitHub Container Registry
+
+    # Database for the smoke test (same settings as docker-compose.yml)
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cupcakes
+          POSTGRES_PASSWORD: cupcakes
+          POSTGRES_DB: cupcakes
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cupcakes -d cupcakes"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Image tags: "latest" on main, branch name, short commit SHA
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+
+      # Build once and load into the local Docker engine for testing.
+      # Layers are cached in GitHub Actions between runs.
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: cupcakes:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Start the container like Compose does: it runs the Alembic migrations, then gunicorn.
+      # Keycloak is not needed for the anonymous home page.
+      - name: Smoke test
+        run: |
+          docker run -d --name web --network host \
+            -e DATABASE_URL=postgresql+psycopg://cupcakes:cupcakes@localhost:5432/cupcakes \
+            -e SECRET_KEY=ci-secret \
+            cupcakes:ci
+          curl --fail --silent --show-error --retry 15 --retry-delay 2 --retry-all-errors \
+            http://localhost:5000/ > /dev/null
+          curl --fail --silent --show-error http://localhost:5000/static/css/app.css > /dev/null
+          echo "Web app is up, migrations applied, CSS built"
+
+      - name: Container logs
+        if: always()
+        run: docker logs web || true
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Reuses the cached layers from "Build image", so this is only an upload
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha

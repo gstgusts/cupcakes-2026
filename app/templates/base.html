@@ -19,6 +19,7 @@
         <div class="flex items-center gap-8">
           <a class="nav-link" href="{{ url_for('home') }}">Home</a>
           {% if current_user %}
+            <a class="nav-link" href="{{ url_for('cupcakes.index') }}">Cupcakes</a>
             {% if is_admin %}
               <a class="nav-link" href="{{ url_for('users.index') }}">Users</a>
             {% endif %}

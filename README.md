@@ -45,6 +45,7 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 ## Pages
 
 - `/` – welcome page (redirects to the profile when logged in)
+- `/cupcakes` – cupcake list with search and type filter (any logged-in user)
 - `/profile` – profile details of the logged-in user
 - `/users` – user list with search (`admin` role only)
 - `/users/new` – add a user (`admin` role only)
@@ -64,7 +65,7 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 ## Project layout
 
 - `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
-- `app/web` – blueprints (`auth`, `profile`, `user`)
+- `app/web` – blueprints (`auth`, `cupcake`, `profile`, `user`)
 - `app/keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
 - `app/auth.py` – Keycloak client registration and `login_required`
 - `app/templates` – Jinja templates styled with Tailwind
@@ -142,6 +143,7 @@ pytest
 `setup-venv.sh` / `setup-venv.ps1` install pytest from `requirements-dev.txt`. The tests use their own database `cupcakes_test` (created automatically and rebuilt from the migrations on every run), so your data in `cupcakes` is not touched. Use a different server with `TEST_DATABASE_URL`.
 
 - `tests/test_validation.py` – form validation and temporary password rules
+- `tests/test_cupcakes.py` – cupcake list, search and type filter
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

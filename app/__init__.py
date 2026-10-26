@@ -14,9 +14,11 @@ def create_app():
 
     # Register web blueprints (split by entity)
     from .web.auth import auth_bp
+    from .web.cupcake import cupcakes_bp
     from .web.profile import profile_bp
     from .web.user import users_bp
     app.register_blueprint(auth_bp)  # /auth
+    app.register_blueprint(cupcakes_bp)  # /cupcakes
     app.register_blueprint(profile_bp)  # /profile
     app.register_blueprint(users_bp)  # /users (admin only)
 

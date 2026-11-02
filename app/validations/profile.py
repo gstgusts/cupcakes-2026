@@ -1,7 +1,4 @@
-"""Form validation shared by the profile and user pages. Each function returns {field: message}."""
-import re
-
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+"""Validation of the profile fields (also used when an admin adds a user)."""
 
 
 def validate_person(form):
@@ -16,12 +13,3 @@ def validate_person(form):
     elif len(form["surname"]) > 100:
         errors["surname"] = "Last name can be at most 100 characters."
     return errors
-
-
-def validate_email(form):
-    """Checks the email field."""
-    if not form["email"]:
-        return {"email": "Email address is required."}
-    if len(form["email"]) > 255 or not EMAIL_RE.match(form["email"]):
-        return {"email": "Enter a valid email address."}
-    return {}

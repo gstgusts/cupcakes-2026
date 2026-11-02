@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..auth import current_user, login_required
 from ..models import User
 from ..models.base import db
-from ..validation import validate_person
+from ..validations.profile import validate_person
 
 profile_bp = Blueprint("profile", __name__, url_prefix="/profile")
 

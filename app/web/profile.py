@@ -1,5 +1,4 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..models import User
@@ -14,7 +13,7 @@ profile_bp = Blueprint("profile", __name__, url_prefix="/profile")
 @login_required
 def details():
     email = current_user()["email"]
-    profile = _find_profile(email)
+    profile = User.find_by_email(email)
     if profile is None:
         return render_template("profile/details.html", profile=None, email=email), 404
     return render_template("profile/details.html", profile=profile, email=email)
@@ -26,7 +25,7 @@ def edit():
     """Creates the profile of the logged-in user if it is missing, otherwise updates it."""
     identity = current_user()
     email = identity["email"]
-    profile = _find_profile(email)
+    profile = User.find_by_email(email)
     is_new = profile is None
 
     if request.method == "GET":
@@ -57,8 +56,3 @@ def edit():
 
     flash("Profile created." if is_new else "Profile saved.")
     return redirect(url_for("profile.details"))
-
-
-def _find_profile(email):
-    # Keycloak user is linked to the stored user by email (case-insensitive)
-    return User.query.filter(func.lower(User.email) == email.lower()).first()

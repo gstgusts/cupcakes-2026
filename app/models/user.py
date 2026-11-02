@@ -19,3 +19,8 @@ class User(db.Model):
     __table_args__ = (
         db.Index("ux_users_email_lower", db.func.lower(email), unique=True),
     )
+
+    @classmethod
+    def find_by_email(cls, email):
+        """Profile of a Keycloak user: linked to the stored user by email (case-insensitive)."""
+        return cls.query.filter(db.func.lower(cls.email) == email.lower()).first()

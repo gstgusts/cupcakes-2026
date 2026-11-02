@@ -5,6 +5,7 @@ import pytest
 
 from app.validations.cupcake import validate_cupcake
 from app.validations.cupcake_image import detect_image_type, validate_cupcake_image
+from app.validations.plan import validate_plan
 from app.validations.prediction_model import to_decimal, validate_prediction_model
 from app.validations.profile import validate_person
 from app.validations.user import validate_email
@@ -131,3 +132,13 @@ def test_prediction_model_cost_comparison_skipped_when_cost_invalid():
     # Only the invalid field is reported, not "price must be higher than cost" as well
     form = _prediction_model_form(production_cost="abc")
     assert set(validate_prediction_model(form, {CUPCAKE_ID}, {STORE_ID})) == {"production_cost"}
+
+
+@pytest.mark.parametrize("quantity", ["0", "141", "100000"])
+def test_valid_plan_quantity(quantity):
+    assert validate_plan({"quantity": quantity}) == {}
+
+
+@pytest.mark.parametrize("quantity", ["", "abc", "-1", "1.5", "1e3", "²", "100001"])
+def test_invalid_plan_quantity(quantity):
+    assert set(validate_plan({"quantity": quantity})) == {"quantity"}

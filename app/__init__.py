@@ -16,6 +16,7 @@ def create_app():
     from .web.auth import auth_bp
     from .web.cupcake import cupcakes_bp
     from .web.cupcake_image import cupcake_images_bp
+    from .web.plan import plans_bp
     from .web.prediction import predictions_bp
     from .web.prediction_model import prediction_models_bp
     from .web.profile import profile_bp
@@ -25,6 +26,7 @@ def create_app():
     app.register_blueprint(cupcake_images_bp)  # /cupcakes/.../images
     app.register_blueprint(prediction_models_bp)  # /prediction-models
     app.register_blueprint(predictions_bp)  # /predictions
+    app.register_blueprint(plans_bp)  # /plans
     app.register_blueprint(profile_bp)  # /profile
     app.register_blueprint(users_bp)  # /users (admin only)
 

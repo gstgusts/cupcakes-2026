@@ -5,7 +5,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
-from ..models import Cupcake, Prediction, PredictionModel, Store
+from ..models import Cupcake, Plan, Prediction, PredictionModel, Store
 from ..models.base import db
 from ..services.auth import login_required
 from ..services.forecast import recommended_quantity, z_score
@@ -85,6 +85,11 @@ def new():
 @login_required
 def show(prediction_id):
     prediction = db.get_or_404(Prediction, prediction_id, options=[WITH_MODEL])
+    return show_page(prediction)
+
+
+def show_page(prediction, status=200, **context):
+    """Result page of a prediction. The plan pages use it to show confirmation errors."""
     model = prediction.prediction_model
     ratio = model.critical_ratio
     # The calculation steps, shown with the model's parameters
@@ -94,7 +99,11 @@ def show(prediction_id):
         "z": z,
         "exact_quantity": model.average_demand + z * model.demand_std_dev,
     }
-    return render_template("predictions/show.html", prediction=prediction, model=model, steps=steps)
+    # The plan for this cupcake, store and date, if one is confirmed (possibly from another model's prediction)
+    plan = Plan.query.filter_by(cupcake_id=model.cupcake_id, store_id=model.store_id, date=prediction.date).first()
+    context.setdefault("plan_form", {"quantity": str(prediction.recommended_quantity)})
+    return render_template("predictions/show.html", prediction=prediction, model=model, steps=steps,
+                           plan=plan, plan_errors=context.pop("plan_errors", {}), **context), status
 
 
 def _parse_uuid(value):

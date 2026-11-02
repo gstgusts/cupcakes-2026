@@ -108,3 +108,60 @@ def test_create_prediction_model_invalid(client, login, ids, changes, message):
 def test_nav_shows_prediction_models_link(client, login):
     login()
     assert b'href="/prediction-models/"' in client.get("/profile/").data
+
+
+# --- Delete (admin only)
+
+def _add_model(app, ids, name="To delete"):
+    with app.app_context():
+        model = PredictionModel(name=name, cupcake_id=ids["cupcake"], store_id=ids["store"],
+                                average_demand=150, demand_std_dev=30, production_cost=Decimal("10"),
+                                selling_price=Decimal("15"), salvage_value=Decimal("2"))
+        db.session.add(model)
+        db.session.commit()
+        return model.id
+
+
+def test_delete_forbidden_without_admin_role(app, client, login, ids):
+    model_id = _add_model(app, ids)
+    login(roles=["user"])
+    assert client.post(f"/prediction-models/{model_id}/delete").status_code == 403
+    with app.app_context():
+        assert db.session.get(PredictionModel, model_id) is not None
+
+
+def test_list_shows_delete_buttons_and_dialog_only_to_admin(app, client, login, ids):
+    model_id = _add_model(app, ids)
+    login(roles=["user"])
+    response = client.get("/prediction-models/")
+    assert b"delete-dialog" not in response.data
+    assert f"/prediction-models/{model_id}/delete".encode() not in response.data
+
+    login(roles=["admin"])
+    response = client.get("/prediction-models/")
+    assert b'<dialog id="delete-dialog"' in response.data
+    assert f'data-url="/prediction-models/{model_id}/delete"'.encode() in response.data
+
+
+def test_delete_prediction_model(app, client, login, ids):
+    model_id = _add_model(app, ids, name="Old model")
+    login(roles=["admin"])
+    response = client.post(f"/prediction-models/{model_id}/delete", follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Prediction model &#34;Old model&#34; deleted." in response.data
+    with app.app_context():
+        assert db.session.get(PredictionModel, model_id) is None
+        # The cupcake and the store stay
+        assert db.session.get(Cupcake, ids["cupcake"]) is not None
+        assert db.session.get(Store, ids["store"]) is not None
+
+
+def test_delete_unknown_prediction_model(client, login):
+    login(roles=["admin"])
+    assert client.post(f"/prediction-models/{uuid.uuid4()}/delete").status_code == 404
+
+
+def test_delete_requires_post(app, client, login, ids):
+    model_id = _add_model(app, ids)
+    login(roles=["admin"])
+    assert client.get(f"/prediction-models/{model_id}/delete").status_code == 405

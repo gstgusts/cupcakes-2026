@@ -53,6 +53,7 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 - `/cupcakes/images/<id>` – an image from the database (any logged-in user)
 - `/prediction-models` – prediction models with underage cost, overage cost and critical ratio (any logged-in user)
 - `/prediction-models/new` – add a prediction model (`admin` role only)
+- `/prediction-models/<id>/delete` – delete a prediction model after a confirmation dialog (`admin` role only, POST)
 - `/profile` – profile details of the logged-in user
 - `/users` – user list with search (`admin` role only)
 - `/users/new` – add a user (`admin` role only)
@@ -154,7 +155,7 @@ pytest
 - `tests/test_cupcakes.py` – cupcake list, search, type filter, add and edit
 - `tests/test_cupcake_images.py` – image upload, checks, display and delete
 - `tests/test_prediction_models.py` – seeded stores, prediction model constraints and critical ratio
-- `tests/test_prediction_model_pages.py` – prediction model list and add form
+- `tests/test_prediction_model_pages.py` – prediction model list, add form and delete
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

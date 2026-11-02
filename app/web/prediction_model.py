@@ -66,6 +66,17 @@ def new():
     return redirect(url_for("prediction_models.index"))
 
 
+@prediction_models_bp.post("/<uuid:model_id>/delete")
+@role_required("admin")
+def delete(model_id):
+    # The list asks for confirmation in a dialog before it posts here
+    model = db.get_or_404(PredictionModel, model_id)
+    db.session.delete(model)
+    db.session.commit()
+    flash(f'Prediction model "{model.name}" deleted.')
+    return redirect(url_for("prediction_models.index"))
+
+
 def _parse_uuid(value):
     """UUID from the form, or None if it is missing or invalid."""
     try:

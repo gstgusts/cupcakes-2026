@@ -1,9 +1,11 @@
 import uuid
+from decimal import Decimal
 
 import pytest
 
 from app.validations.cupcake import validate_cupcake
 from app.validations.cupcake_image import detect_image_type, validate_cupcake_image
+from app.validations.prediction_model import to_decimal, validate_prediction_model
 from app.validations.profile import validate_person
 from app.validations.user import validate_email
 from app.web.user import PASSWORD_SPECIALS, _temporary_password
@@ -83,3 +85,49 @@ def test_cupcake_image_file_is_required():
 
 def test_cupcake_image_description_too_long():
     assert set(validate_cupcake_image(b"GIF89a...", "a" * 251)) == {"description"}
+
+
+@pytest.mark.parametrize("text, value", [
+    ("12", Decimal("12")),
+    ("12.5", Decimal("12.5")),
+    ("12,5", Decimal("12.5")),
+    ("1 000", Decimal("1000")),
+    ("abc", None),
+    ("", None),
+    ("NaN", None),
+    ("Infinity", None),
+])
+def test_to_decimal(text, value):
+    assert to_decimal(text) == value
+
+
+CUPCAKE_ID, STORE_ID = uuid.uuid4(), uuid.uuid4()
+
+
+def _prediction_model_form(**changes):
+    return {
+        "name": "Case 3", "cupcake": CUPCAKE_ID, "store": STORE_ID,
+        "average_demand": "150", "demand_std_dev": "30",
+        "production_cost": "10", "selling_price": "15", "salvage_value": "2",
+    } | changes
+
+
+
+def test_valid_prediction_model_has_no_errors():
+    assert validate_prediction_model(_prediction_model_form(), {CUPCAKE_ID}, {STORE_ID}) == {}
+
+
+def test_prediction_model_salvage_value_can_be_zero():
+    form = _prediction_model_form(salvage_value="0")
+    assert validate_prediction_model(form, {CUPCAKE_ID}, {STORE_ID}) == {}
+
+
+def test_prediction_model_money_too_large():
+    form = _prediction_model_form(selling_price="100000000")
+    assert set(validate_prediction_model(form, {CUPCAKE_ID}, {STORE_ID})) == {"selling_price"}
+
+
+def test_prediction_model_cost_comparison_skipped_when_cost_invalid():
+    # Only the invalid field is reported, not "price must be higher than cost" as well
+    form = _prediction_model_form(production_cost="abc")
+    assert set(validate_prediction_model(form, {CUPCAKE_ID}, {STORE_ID})) == {"production_cost"}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Prediction models · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex-1 bg-sky-soft px-6 py-12">
+    <div class="mx-auto max-w-6xl">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-extrabold">Prediction models</h1>
+          <p class="mt-1 text-muted">
+            Newsvendor parameters for one cupcake at one store.
+            Critical ratio CR = Cu / (Cu + Co), where Cu = p − c and Co = c − s.
+          </p>
+        </div>
+        {% if is_admin %}
+          <a class="btn-primary py-2" href="{{ url_for('prediction_models.new') }}">Add prediction model</a>
+        {% endif %}
+      </div>
+
+      <section class="card mt-8 overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="border-b border-line text-sm text-muted">
+            <tr>
+              <th class="px-4 py-3 font-bold">Name</th>
+              <th class="px-4 py-3 font-bold">Cupcake</th>
+              <th class="px-4 py-3 font-bold">Store</th>
+              <th class="px-4 py-3 text-right font-bold" title="Average daily demand">d</th>
+              <th class="px-4 py-3 text-right font-bold" title="Standard deviation of daily demand">σ</th>
+              <th class="px-4 py-3 text-right font-bold" title="Production cost">c</th>
+              <th class="px-4 py-3 text-right font-bold" title="Selling price">p</th>
+              <th class="px-4 py-3 text-right font-bold" title="Salvage value">s</th>
+              <th class="px-4 py-3 text-right font-bold" title="Underage cost p − c">Cu</th>
+              <th class="px-4 py-3 text-right font-bold" title="Overage cost c − s">Co</th>
+              <th class="px-4 py-3 text-right font-bold" title="Critical ratio">CR</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            {% for model in models %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-4 font-bold">{{ model.name }}</td>
+                <td class="px-4 py-4">{{ model.cupcake.name }}</td>
+                <td class="px-4 py-4">{{ model.store.name }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ '%g' % model.average_demand }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ '%g' % model.demand_std_dev }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ model.production_cost }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ model.selling_price }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ model.salvage_value }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ model.underage_cost }}</td>
+                <td class="px-4 py-4 text-right tabular-nums">{{ model.overage_cost }}</td>
+                <td class="px-4 py-4 text-right font-bold tabular-nums">{{ '%.2f' % model.critical_ratio }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="11" class="px-6 py-10 text-center text-muted">No prediction models yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+{% endblock %}

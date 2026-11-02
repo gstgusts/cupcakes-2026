@@ -20,6 +20,7 @@
           <a class="nav-link" href="{{ url_for('home') }}">Home</a>
           {% if current_user %}
             <a class="nav-link" href="{{ url_for('cupcakes.index') }}">Cupcakes</a>
+            <a class="nav-link" href="{{ url_for('prediction_models.index') }}">Prediction models</a>
             {% if is_admin %}
               <a class="nav-link" href="{{ url_for('users.index') }}">Users</a>
             {% endif %}

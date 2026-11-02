@@ -10,7 +10,8 @@ from ..auth import role_required
 from ..keycloak_admin import KeycloakConflict, KeycloakError
 from ..models import User
 from ..models.base import db
-from ..validation import validate_email, validate_person
+from ..validations.profile import validate_person
+from ..validations.user import validate_email
 
 users_bp = Blueprint("users", __name__, url_prefix="/users")
 

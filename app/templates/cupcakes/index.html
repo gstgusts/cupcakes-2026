@@ -19,6 +19,9 @@
             {% endfor %}
           </select>
           <button type="submit" class="btn-secondary">Search</button>
+          {% if is_admin %}
+            <a class="btn-primary py-2" href="{{ url_for('cupcakes.new') }}">Add cupcake</a>
+          {% endif %}
         </form>
       </div>
 
@@ -29,6 +32,7 @@
               <th class="px-6 py-3 font-bold">Name</th>
               <th class="px-6 py-3 font-bold">Type</th>
               <th class="px-6 py-3 font-bold">Description</th>
+              {% if is_admin %}<th class="px-6 py-3"><span class="sr-only">Actions</span></th>{% endif %}
             </tr>
           </thead>
           <tbody class="divide-y divide-line">
@@ -39,10 +43,16 @@
                   <span class="rounded-full bg-sky-soft px-3 py-1 text-sm">{{ cupcake.cupcake_type.name }}</span>
                 </td>
                 <td class="px-6 py-4 text-muted">{{ cupcake.description or '—' }}</td>
+                {% if is_admin %}
+                  <td class="px-6 py-4 text-right">
+                    <a class="font-semibold text-brand hover:text-brand-dark"
+                       href="{{ url_for('cupcakes.edit', cupcake_id=cupcake.id) }}">Edit</a>
+                  </td>
+                {% endif %}
               </tr>
             {% else %}
               <tr>
-                <td colspan="3" class="px-6 py-10 text-center text-muted">No cupcakes found.</td>
+                <td colspan="{{ 4 if is_admin else 3 }}" class="px-6 py-10 text-center text-muted">No cupcakes found.</td>
               </tr>
             {% endfor %}
           </tbody>

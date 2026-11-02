@@ -3,43 +3,99 @@
 {% block title %}{{ 'Add cupcake' if is_new else 'Edit cupcake' }} · Cupcake Business{% endblock %}
 {% block content %}
   <div class="flex flex-1 items-start justify-center bg-sky-soft px-6 py-12">
-    <div class="card w-full max-w-xl p-8 sm:p-10">
-      <h1 class="text-3xl font-extrabold">{{ 'Add cupcake' if is_new else 'Edit cupcake' }}</h1>
-      <p class="mt-1 text-muted">
-        {{ 'Adds a new cupcake to the list.' if is_new else 'Update the name, type or description.' }}
-      </p>
+    <div class="w-full max-w-xl space-y-6">
+      <div class="card p-8 sm:p-10">
+        <h1 class="text-3xl font-extrabold">{{ 'Add cupcake' if is_new else 'Edit cupcake' }}</h1>
+        <p class="mt-1 text-muted">
+          {{ 'Adds a new cupcake to the list.' if is_new else 'Update the name, type or description.' }}
+        </p>
 
-      <form method="post" class="mt-8 space-y-5" novalidate>
-        <div>
-          <label class="label" for="name">Name</label>
-          <input class="input {{ 'input-invalid' if errors.name }}" id="name" name="name"
-                 value="{{ form.name or '' }}" maxlength="100" autocomplete="off" autofocus>
-          {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
-        </div>
+        <form method="post" class="mt-8 space-y-5" novalidate>
+          <div>
+            <label class="label" for="name">Name</label>
+            <input class="input {{ 'input-invalid' if errors.name }}" id="name" name="name"
+                   value="{{ form.name or '' }}" maxlength="100" autocomplete="off" autofocus>
+            {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
+          </div>
 
-        <div>
-          <label class="label" for="type">Type</label>
-          <select class="input {{ 'input-invalid' if errors.type }}" id="type" name="type">
-            <option value="">Choose a type</option>
-            {% for type in types %}
-              <option value="{{ type.id }}" {% if type.id == form.type %}selected{% endif %}>{{ type.name }}</option>
+          <div>
+            <label class="label" for="type">Type</label>
+            <select class="input {{ 'input-invalid' if errors.type }}" id="type" name="type">
+              <option value="">Choose a type</option>
+              {% for type in types %}
+                <option value="{{ type.id }}" {% if type.id == form.type %}selected{% endif %}>{{ type.name }}</option>
+              {% endfor %}
+            </select>
+            {% if errors.type %}<p class="field-error">{{ errors.type }}</p>{% endif %}
+          </div>
+
+          <div>
+            <label class="label" for="description">Description <span class="font-normal text-muted">(optional)</span></label>
+            <textarea class="input {{ 'input-invalid' if errors.description }}" id="description" name="description"
+                      rows="4" maxlength="1000">{{ form.description or '' }}</textarea>
+            {% if errors.description %}<p class="field-error">{{ errors.description }}</p>{% endif %}
+          </div>
+
+          <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a class="btn-secondary" href="{{ url_for('cupcakes.index') }}">Cancel</a>
+            <button type="submit" class="btn-primary">{{ 'Add cupcake' if is_new else 'Save changes' }}</button>
+          </div>
+          {% if is_new %}
+            <p class="text-sm text-muted">You can add images after the cupcake is saved.</p>
+          {% endif %}
+        </form>
+      </div>
+
+    {% if not is_new %}
+      {% set image_errors = image_errors or {} %}
+      {% set image_form = image_form or {} %}
+      <section class="card p-8 sm:p-10">
+        <h2 class="text-2xl font-extrabold">Images</h2>
+
+        {% if cupcake.images %}
+          <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+            {% for image in cupcake.images %}
+              <li class="overflow-hidden rounded-lg border border-line">
+                <img class="aspect-square w-full object-cover" alt="{{ image.description or cupcake.name }}"
+                     src="{{ url_for('cupcake_images.show', image_id=image.id) }}">
+                <div class="flex items-start justify-between gap-3 p-3">
+                  <p class="text-sm {{ 'text-muted' if not image.description }}">{{ image.description or 'No description' }}</p>
+                  <form method="post" onsubmit="return confirm('Delete this image?')"
+                        action="{{ url_for('cupcake_images.delete', cupcake_id=cupcake.id, image_id=image.id) }}">
+                    <button type="submit" class="text-sm font-semibold text-red-700 hover:text-red-800">Delete</button>
+                  </form>
+                </div>
+              </li>
             {% endfor %}
-          </select>
-          {% if errors.type %}<p class="field-error">{{ errors.type }}</p>{% endif %}
-        </div>
+          </ul>
+        {% else %}
+          <p class="mt-1 text-muted">No images yet.</p>
+        {% endif %}
 
-        <div>
-          <label class="label" for="description">Description <span class="font-normal text-muted">(optional)</span></label>
-          <textarea class="input {{ 'input-invalid' if errors.description }}" id="description" name="description"
-                    rows="4" maxlength="1000">{{ form.description or '' }}</textarea>
-          {% if errors.description %}<p class="field-error">{{ errors.description }}</p>{% endif %}
-        </div>
-
-        <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-          <a class="btn-secondary" href="{{ url_for('cupcakes.index') }}">Cancel</a>
-          <button type="submit" class="btn-primary">{{ 'Add cupcake' if is_new else 'Save changes' }}</button>
-        </div>
-      </form>
+        <form method="post" enctype="multipart/form-data" class="mt-8 space-y-5" novalidate
+              action="{{ url_for('cupcake_images.upload', cupcake_id=cupcake.id) }}">
+          <div>
+            <label class="label" for="image">Image file</label>
+            <input class="input {{ 'input-invalid' if image_errors.image }}" id="image" name="image" type="file"
+                   accept="image/jpeg,image/png,image/gif,image/webp">
+            {% if image_errors.image %}
+              <p class="field-error">{{ image_errors.image }}</p>
+            {% else %}
+              <p class="mt-1.5 text-sm text-muted">JPEG, PNG, GIF or WebP, at most 2 MB.</p>
+            {% endif %}
+          </div>
+          <div>
+            <label class="label" for="image-description">Description <span class="font-normal text-muted">(optional)</span></label>
+            <input class="input {{ 'input-invalid' if image_errors.description }}" id="image-description"
+                   name="description" value="{{ image_form.description or '' }}" maxlength="250" autocomplete="off">
+            {% if image_errors.description %}<p class="field-error">{{ image_errors.description }}</p>{% endif %}
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" class="btn-primary">Upload image</button>
+          </div>
+        </form>
+      </section>
+    {% endif %}
     </div>
   </div>
 {% endblock %}

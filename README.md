@@ -49,6 +49,8 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 - `/cupcakes/new` – add a cupcake (`admin` role only)
 - `/cupcakes/<id>/edit` – edit a cupcake, upload and delete its images (`admin` role only)
 - `/cupcakes/images/<id>` – an image from the database (any logged-in user)
+- `/prediction-models` – prediction models with underage cost, overage cost and critical ratio (any logged-in user)
+- `/prediction-models/new` – add a prediction model (`admin` role only)
 - `/profile` – profile details of the logged-in user
 - `/users` – user list with search (`admin` role only)
 - `/users/new` – add a user (`admin` role only)
@@ -68,8 +70,8 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 ## Project layout
 
 - `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
-- `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `profile`, `user`)
-- `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `profile`, `user`)
+- `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `prediction_model`, `profile`, `user`)
+- `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `prediction_model`, `profile`, `user`)
 - `app/keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
 - `app/auth.py` – Keycloak client registration and `login_required`
 - `app/templates` – Jinja templates styled with Tailwind
@@ -150,6 +152,7 @@ pytest
 - `tests/test_cupcakes.py` – cupcake list, search, type filter, add and edit
 - `tests/test_cupcake_images.py` – image upload, checks, display and delete
 - `tests/test_prediction_models.py` – seeded stores, prediction model constraints and critical ratio
+- `tests/test_prediction_model_pages.py` – prediction model list and add form
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

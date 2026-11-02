@@ -11,6 +11,8 @@ Server-rendered Flask web app with PostgreSQL, Alembic migrations (Flask-Migrate
 
 Both scripts run `docker compose up -d --build` from the project folder. Stop everything with `docker compose down`.
 
+To get the latest version first, use `update.sh` / `update.ps1` instead: it switches to `main`, pulls with `git pull --ff-only` and then runs the start script. It stops if you have uncommitted changes that block the switch, or if your local `main` has commits that are not on GitHub.
+
 If PowerShell refuses to run the script because of the execution policy, run it like this:
 
 ```powershell

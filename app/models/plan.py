@@ -47,6 +47,8 @@ class Plan(db.Model):
     store = db.relationship("Store")
     prediction = db.relationship("Prediction", back_populates="plans")
     confirmed_by = db.relationship("User")
+    # The daily sales summary, once recorded (ON DELETE RESTRICT)
+    sales = db.relationship("Sales", back_populates="plan", uselist=False, passive_deletes="all")
 
     __table_args__ = (
         # One plan per cupcake, store and date

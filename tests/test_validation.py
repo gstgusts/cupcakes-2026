@@ -8,6 +8,7 @@ from app.validations.cupcake_image import detect_image_type, validate_cupcake_im
 from app.validations.plan import validate_plan
 from app.validations.prediction_model import to_decimal, validate_prediction_model
 from app.validations.profile import validate_person
+from app.validations.sales import validate_sales
 from app.validations.user import validate_email
 from app.web.user import PASSWORD_SPECIALS, _temporary_password
 
@@ -142,3 +143,15 @@ def test_valid_plan_quantity(quantity):
 @pytest.mark.parametrize("quantity", ["", "abc", "-1", "1.5", "1e3", "²", "100001"])
 def test_invalid_plan_quantity(quantity):
     assert set(validate_plan({"quantity": quantity})) == {"quantity"}
+
+
+def test_valid_sales_has_no_errors():
+    assert validate_sales({"quantity_sold": "120", "revenue": "1800,50"}, 135) == {}
+
+
+def test_sales_fields_are_required():
+    assert set(validate_sales({"quantity_sold": "", "revenue": ""}, 135)) == {"quantity_sold", "revenue"}
+
+
+def test_sales_cannot_exceed_baked_quantity():
+    assert set(validate_sales({"quantity_sold": "136", "revenue": "0"}, 135)) == {"quantity_sold"}

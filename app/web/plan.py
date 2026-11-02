@@ -21,7 +21,7 @@ def index():
     plans = (
         Plan.query
         .options(joinedload(Plan.cupcake), joinedload(Plan.store),
-                 joinedload(Plan.prediction), joinedload(Plan.confirmed_by))
+                 joinedload(Plan.prediction), joinedload(Plan.confirmed_by), joinedload(Plan.sales))
         .order_by(Plan.date.desc(), Plan.confirmed_at.desc())
         .all()
     )

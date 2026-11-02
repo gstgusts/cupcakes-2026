@@ -21,3 +21,11 @@ class Cupcake(db.Model):
         index=True,
     )
     cupcake_type = db.relationship("CupcakeType", back_populates="cupcakes")
+    # Oldest first, so the first uploaded image is the one shown in the list
+    images = db.relationship(
+        "CupcakeImage",
+        back_populates="cupcake",
+        order_by="CupcakeImage.created_at",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

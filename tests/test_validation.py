@@ -3,6 +3,7 @@ import uuid
 import pytest
 
 from app.validations.cupcake import validate_cupcake
+from app.validations.cupcake_image import detect_image_type, validate_cupcake_image
 from app.validations.profile import validate_person
 from app.validations.user import validate_email
 from app.web.user import PASSWORD_SPECIALS, _temporary_password
@@ -62,3 +63,23 @@ def test_cupcake_name_and_description_too_long():
     type_id = uuid.uuid4()
     errors = validate_cupcake({"name": "a" * 101, "type": type_id, "description": "a" * 1001}, {type_id})
     assert set(errors) == {"name", "description"}
+
+
+@pytest.mark.parametrize("data, content_type", [
+    (b"\x89PNG\r\n\x1a\n...", "image/png"),
+    (b"\xff\xd8\xff\xe0...", "image/jpeg"),
+    (b"GIF89a...", "image/gif"),
+    (b"RIFF\x00\x00\x00\x00WEBPVP8 ", "image/webp"),
+    (b"<svg xmlns='http://www.w3.org/2000/svg'></svg>", None),
+    (b"%PDF-1.7", None),
+])
+def test_detect_image_type(data, content_type):
+    assert detect_image_type(data) == content_type
+
+
+def test_cupcake_image_file_is_required():
+    assert set(validate_cupcake_image(b"", "")) == {"image"}
+
+
+def test_cupcake_image_description_too_long():
+    assert set(validate_cupcake_image(b"GIF89a...", "a" * 251)) == {"description"}

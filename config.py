@@ -8,6 +8,8 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+    # Largest accepted request body: a 2 MB cupcake image plus the other form fields
+    MAX_CONTENT_LENGTH = 3 * 1024 * 1024
 
     # Keycloak URL as the browser sees it (login page, logout, token issuer)
     KEYCLOAK_PUBLIC_URL = os.getenv("KEYCLOAK_PUBLIC_URL", "http://localhost:8080")

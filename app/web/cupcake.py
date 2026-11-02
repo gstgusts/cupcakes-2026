@@ -3,7 +3,7 @@ import uuid
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from ..auth import login_required, role_required
 from ..models import Cupcake, CupcakeType
@@ -19,8 +19,9 @@ def index():
     q = (request.args.get("q") or "").strip()
     type_id = _parse_uuid(request.args.get("type"))
 
-    # Loads the type together with each cupcake (one query instead of one per row)
-    query = Cupcake.query.options(joinedload(Cupcake.cupcake_type))
+    # Loads the type together with each cupcake (one query instead of one per row),
+    # and the images in one extra query (without the image bytes, see CupcakeImage.data)
+    query = Cupcake.query.options(joinedload(Cupcake.cupcake_type), selectinload(Cupcake.images))
     if q:
         like = f"%{q}%"
         query = query.filter(Cupcake.name.ilike(like) | Cupcake.description.ilike(like))
@@ -45,9 +46,15 @@ def new():
 def edit(cupcake_id):
     cupcake = db.get_or_404(Cupcake, cupcake_id)
     if request.method == "GET":
-        form = {"name": cupcake.name, "type": cupcake.cupcake_type_id, "description": cupcake.description or ""}
-        return render_template("cupcakes/form.html", cupcake=cupcake, form=form, errors={}, types=_types())
+        return edit_page(cupcake)
     return _save(cupcake)
+
+
+def edit_page(cupcake, status=200, **context):
+    """Edit form filled with the saved values. The image pages use it to show upload errors."""
+    form = {"name": cupcake.name, "type": cupcake.cupcake_type_id, "description": cupcake.description or ""}
+    return render_template("cupcakes/form.html", cupcake=cupcake, form=form, errors={}, types=_types(),
+                           **context), status
 
 
 def _save(cupcake):

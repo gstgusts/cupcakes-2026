@@ -1,5 +1,6 @@
 import uuid
 
+from app.services.forecast import critical_ratio
 from app.models.base import db
 
 
@@ -38,6 +39,8 @@ class PredictionModel(db.Model):
 
     cupcake = db.relationship("Cupcake", back_populates="prediction_models")
     store = db.relationship("Store", back_populates="prediction_models")
+    # A model cannot be deleted while predictions use it (ON DELETE RESTRICT in the database)
+    predictions = db.relationship("Prediction", back_populates="prediction_model", passive_deletes="all")
 
     # Both costs must be positive, otherwise the critical ratio is not defined:
     # underage cost = price - cost > 0, overage cost = cost - salvage > 0
@@ -62,4 +65,4 @@ class PredictionModel(db.Model):
     @property
     def critical_ratio(self):
         """CR = Cu / (Cu + Co): bake so that P(demand <= quantity) equals this."""
-        return float(self.underage_cost / (self.underage_cost + self.overage_cost))
+        return critical_ratio(self.production_cost, self.selling_price, self.salvage_value)

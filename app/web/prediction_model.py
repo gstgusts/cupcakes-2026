@@ -4,9 +4,9 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
-from ..auth import login_required, role_required
 from ..models import Cupcake, PredictionModel, Store
 from ..models.base import db
+from ..services.auth import login_required, role_required
 from ..validations.prediction_model import to_decimal, validate_prediction_model
 
 prediction_models_bp = Blueprint("prediction_models", __name__, url_prefix="/prediction-models")
@@ -71,6 +71,10 @@ def new():
 def delete(model_id):
     # The list asks for confirmation in a dialog before it posts here
     model = db.get_or_404(PredictionModel, model_id)
+    # Predictions keep the model (ON DELETE RESTRICT), so say why instead of failing
+    if model.predictions:
+        flash(f'Prediction model "{model.name}" has predictions and cannot be deleted.', "error")
+        return redirect(url_for("prediction_models.index"))
     db.session.delete(model)
     db.session.commit()
     flash(f'Prediction model "{model.name}" deleted.')

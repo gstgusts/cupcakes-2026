@@ -31,7 +31,7 @@
               <th class="px-4 py-3 text-right font-bold" title="Underage cost p − c">Cu</th>
               <th class="px-4 py-3 text-right font-bold" title="Overage cost c − s">Co</th>
               <th class="px-4 py-3 text-right font-bold" title="Critical ratio">CR</th>
-              {% if is_admin %}<th class="px-4 py-3"><span class="sr-only">Actions</span></th>{% endif %}
+              <th class="px-4 py-3"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-line">
@@ -48,17 +48,19 @@
                 <td class="px-4 py-4 text-right tabular-nums">{{ model.underage_cost }}</td>
                 <td class="px-4 py-4 text-right tabular-nums">{{ model.overage_cost }}</td>
                 <td class="px-4 py-4 text-right font-bold tabular-nums">{{ '%.2f' % model.critical_ratio }}</td>
-                {% if is_admin %}
-                  <td class="px-4 py-4 text-right">
-                    <button type="button" class="font-semibold text-red-700 hover:text-red-800" data-delete-model
+                <td class="whitespace-nowrap px-4 py-4 text-right">
+                  <a class="font-semibold text-brand hover:text-brand-dark"
+                     href="{{ url_for('predictions.new', model=model.id) }}">Predict</a>
+                  {% if is_admin %}
+                    <button type="button" class="ml-3 font-semibold text-red-700 hover:text-red-800" data-delete-model
                             data-name="{{ model.name }}" data-cupcake="{{ model.cupcake.name }}" data-store="{{ model.store.name }}"
                             data-url="{{ url_for('prediction_models.delete', model_id=model.id) }}">Delete</button>
-                  </td>
-                {% endif %}
+                  {% endif %}
+                </td>
               </tr>
             {% else %}
               <tr>
-                <td colspan="{{ 12 if is_admin else 11 }}" class="px-6 py-10 text-center text-muted">No prediction models yet.</td>
+                <td colspan="12" class="px-6 py-10 text-center text-muted">No prediction models yet.</td>
               </tr>
             {% endfor %}
           </tbody>

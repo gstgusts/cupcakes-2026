@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Prediction {{ prediction.date.isoformat() }} · Cupcake Business{% endblock %}
+
+{% macro step(label, formula, value) %}
+  <div class="flex items-baseline justify-between gap-4 py-3">
+    <dt>{{ label }} <span class="text-sm text-muted">{{ formula }}</span></dt>
+    <dd class="font-bold tabular-nums">{{ value }}</dd>
+  </div>
+{% endmacro %}
+
+{% block content %}
+  <div class="flex flex-1 items-start justify-center bg-sky-soft px-6 py-12">
+    <div class="w-full max-w-2xl space-y-6">
+      <section class="card p-8 text-center sm:p-10">
+        <p class="font-semibold text-muted">
+          {{ model.cupcake.name }} at {{ model.store.name }} on {{ prediction.date.isoformat() }}
+        </p>
+        <p class="mt-4 text-lg">Bake</p>
+        <p class="text-7xl font-extrabold text-brand tabular-nums">{{ prediction.recommended_quantity }}</p>
+        <p class="mt-1 text-lg">cupcakes</p>
+        <p class="mx-auto mt-6 max-w-md text-muted">
+          {% if steps.ratio < 0.5 %}
+            A leftover cupcake costs more than a missed sale (Co &gt; Cu), so bake fewer than the average demand.
+          {% elif steps.ratio > 0.5 %}
+            A missed sale costs more than a leftover cupcake (Cu &gt; Co), so bake more than the average demand.
+          {% else %}
+            A missed sale and a leftover cost the same (Cu = Co), so bake the average demand.
+          {% endif %}
+        </p>
+      </section>
+
+      <section class="card p-8 sm:p-10">
+        <h2 class="text-2xl font-extrabold">How it was calculated</h2>
+        <p class="mt-1 text-muted">Prediction model "{{ model.name }}".</p>
+
+        <dl class="mt-6 divide-y divide-line">
+          {{ step('Average demand', 'd', '%g' % model.average_demand) }}
+          {{ step('Standard deviation', 'σ', '%g' % model.demand_std_dev) }}
+          {{ step('Production cost', 'c', model.production_cost) }}
+          {{ step('Selling price', 'p', model.selling_price) }}
+          {{ step('Salvage value', 's', model.salvage_value) }}
+          {{ step('Underage cost', 'Cu = p − c', model.underage_cost) }}
+          {{ step('Overage cost', 'Co = c − s', model.overage_cost) }}
+          {{ step('Critical ratio', 'CR = Cu / (Cu + Co)', '%.4f' % steps.ratio) }}
+          {{ step('z-score', 'P(Z ≤ z) = CR', '%.4f' % steps.z) }}
+          {{ step('Quantity', 'Q = d + z · σ', '%.2f' % steps.exact_quantity) }}
+          {{ step('Rounded', '', prediction.recommended_quantity) }}
+        </dl>
+      </section>
+
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <a class="btn-secondary" href="{{ url_for('predictions.index') }}">All predictions</a>
+        <a class="btn-primary" href="{{ url_for('predictions.new', model=model.id) }}">New prediction</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from markupsafe import escape
 
-from app import keycloak_admin
+from app.services import keycloak_admin
 from app.models import User
 
 

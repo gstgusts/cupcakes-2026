@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from authlib.integrations.base_client import OAuthError
 from flask import Blueprint, current_app, redirect, render_template, session, url_for
 
-from ..auth import oauth
+from ..services.auth import oauth
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}New prediction · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex flex-1 items-start justify-center bg-sky-soft px-6 py-12">
+    <div class="card w-full max-w-xl p-8 sm:p-10">
+      <h1 class="text-3xl font-extrabold">New prediction</h1>
+      <p class="mt-1 text-muted">Calculates how many cupcakes to bake on one date.</p>
+
+      {% if models %}
+        <form method="post" class="mt-8 space-y-5" novalidate>
+          <div>
+            <label class="label" for="model">Prediction model</label>
+            <select class="input {{ 'input-invalid' if errors.model }}" id="model" name="model" autofocus>
+              <option value="">Choose a prediction model</option>
+              {% for model in models %}
+                <option value="{{ model.id }}" {% if model.id == form.model %}selected{% endif %}>
+                  {{ model.cupcake.name }} · {{ model.store.name }} · {{ model.name }}
+                </option>
+              {% endfor %}
+            </select>
+            {% if errors.model %}<p class="field-error">{{ errors.model }}</p>{% endif %}
+          </div>
+
+          <div>
+            <label class="label" for="date">Date</label>
+            <input class="input {{ 'input-invalid' if errors.date }}" id="date" name="date" type="date"
+                   value="{{ form.date or '' }}">
+            {% if errors.date %}
+              <p class="field-error">
+                {{ errors.date }}
+                {% if existing %}
+                  <a class="font-semibold underline"
+                     href="{{ url_for('predictions.show', prediction_id=existing.id) }}">Open it</a>
+                {% endif %}
+              </p>
+            {% else %}
+              <p class="mt-1.5 text-sm text-muted">The day the cupcakes will be sold.</p>
+            {% endif %}
+          </div>
+
+          <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a class="btn-secondary" href="{{ url_for('predictions.index') }}">Cancel</a>
+            <button type="submit" class="btn-primary">Calculate</button>
+          </div>
+        </form>
+      {% else %}
+        <p class="alert-warning mt-8">
+          There are no prediction models yet.
+          {% if is_admin %}
+            <a class="font-semibold underline" href="{{ url_for('prediction_models.new') }}">Add one first.</a>
+          {% else %}
+            Ask an admin to add one.
+          {% endif %}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

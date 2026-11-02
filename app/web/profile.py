@@ -2,9 +2,9 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 
-from ..auth import current_user, login_required
 from ..models import User
 from ..models.base import db
+from ..services.auth import current_user, login_required
 from ..validations.profile import validate_person
 
 profile_bp = Blueprint("profile", __name__, url_prefix="/profile")

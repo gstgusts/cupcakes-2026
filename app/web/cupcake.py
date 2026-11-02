@@ -5,9 +5,9 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload, selectinload
 
-from ..auth import login_required, role_required
 from ..models import Cupcake, CupcakeType
 from ..models.base import db
+from ..services.auth import login_required, role_required
 from ..validations.cupcake import validate_cupcake
 
 cupcakes_bp = Blueprint("cupcakes", __name__, url_prefix="/cupcakes")

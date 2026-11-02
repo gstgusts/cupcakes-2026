@@ -53,7 +53,10 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 - `/cupcakes/images/<id>` – an image from the database (any logged-in user)
 - `/prediction-models` – prediction models with underage cost, overage cost and critical ratio (any logged-in user)
 - `/prediction-models/new` – add a prediction model (`admin` role only)
-- `/prediction-models/<id>/delete` – delete a prediction model after a confirmation dialog (`admin` role only, POST)
+- `/prediction-models/<id>/delete` – delete a prediction model after a confirmation dialog (`admin` role only, POST; not possible while it has predictions)
+- `/predictions` – predictions, newest date first (any logged-in user)
+- `/predictions/new` – calculate how many cupcakes to bake for a prediction model and date (any logged-in user)
+- `/predictions/<id>` – the recommended quantity and the calculation steps
 - `/profile` – profile details of the logged-in user
 - `/users` – user list with search (`admin` role only)
 - `/users/new` – add a user (`admin` role only)
@@ -65,18 +68,20 @@ There is no self-registration: an admin adds users on `/users/new`.
 
 1. The form is validated (required fields, lengths, email format).
 2. The email must not exist yet, neither as a user profile in our database nor as a Keycloak account.
-3. The app creates the Keycloak user through the Keycloak Admin REST API (`app/keycloak_admin.py`) with a generated temporary password, then saves the user profile. If saving the profile fails, the Keycloak user is deleted again.
+3. The app creates the Keycloak user through the Keycloak Admin REST API (`app/services/keycloak_admin.py`) with a generated temporary password, then saves the user profile. If saving the profile fails, the Keycloak user is deleted again.
 4. The temporary password is shown once to the admin. Keycloak asks the new user to set their own password at first sign-in.
 
 The app calls the Admin API as the service account of the `cupcakes-web` client (client credentials grant). In `keycloak/realm-cupcakes.json` the service account has only the `realm-management` roles `manage-users` and `view-users`.
 
 ## Project layout
 
-- `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
-- `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `prediction_model`, `profile`, `user`)
-- `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `prediction_model`, `profile`, `user`)
-- `app/keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
-- `app/auth.py` – Keycloak client registration and `login_required`
+- `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`, `Prediction`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
+- `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `prediction`, `prediction_model`, `profile`, `user`)
+- `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `prediction`, `prediction_model`, `profile`, `user`)
+- `app/services` – code used by the pages that is not a page itself:
+  - `auth.py` – Keycloak client registration, `login_required` and `role_required`
+  - `keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
+  - `forecast.py` – newsvendor calculation: critical ratio, z-score, recommended quantity
 - `app/templates` – Jinja templates styled with Tailwind
 - `app/static/src/input.css` – Tailwind entry; compiled to `app/static/css/app.css` in the Docker build
 - `migrations` – Alembic (Flask-Migrate)
@@ -156,6 +161,8 @@ pytest
 - `tests/test_cupcake_images.py` – image upload, checks, display and delete
 - `tests/test_prediction_models.py` – seeded stores, prediction model constraints and critical ratio
 - `tests/test_prediction_model_pages.py` – prediction model list, add form and delete
+- `tests/test_forecast.py` – newsvendor calculation with the lecture examples
+- `tests/test_predictions.py` – creating predictions, result page and list
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

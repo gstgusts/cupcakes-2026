@@ -21,6 +21,7 @@
           {% if current_user %}
             <a class="nav-link" href="{{ url_for('cupcakes.index') }}">Cupcakes</a>
             <a class="nav-link" href="{{ url_for('prediction_models.index') }}">Prediction models</a>
+            <a class="nav-link" href="{{ url_for('predictions.index') }}">Predictions</a>
             {% if is_admin %}
               <a class="nav-link" href="{{ url_for('users.index') }}">Users</a>
             {% endif %}
@@ -39,9 +40,10 @@
           <div class="alert-error">{{ error }}</div>
         </div>
       {% endif %}
-      {% for message in get_flashed_messages() %}
+      {# flash(message) shows a success message, flash(message, "error") an error #}
+      {% for category, message in get_flashed_messages(with_categories=true) %}
         <div class="mx-auto max-w-6xl px-6 pt-6">
-          <div class="alert-success">{{ message }}</div>
+          <div class="{{ 'alert-error' if category == 'error' else 'alert-success' }}">{{ message }}</div>
         </div>
       {% endfor %}
       {% block content %}{% endblock %}

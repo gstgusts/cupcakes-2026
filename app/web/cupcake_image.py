@@ -2,9 +2,9 @@ from flask import Blueprint, abort, flash, redirect, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from ..auth import login_required, role_required
 from ..models import Cupcake, CupcakeImage
 from ..models.base import db
+from ..services.auth import login_required, role_required
 from ..validations.cupcake_image import detect_image_type, validate_cupcake_image
 from .cupcake import edit_page
 

@@ -5,11 +5,11 @@ from flask import Blueprint, render_template, request
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 
-from .. import keycloak_admin
-from ..auth import role_required
-from ..keycloak_admin import KeycloakConflict, KeycloakError
 from ..models import User
 from ..models.base import db
+from ..services import keycloak_admin
+from ..services.auth import role_required
+from ..services.keycloak_admin import KeycloakConflict, KeycloakError
 from ..validations.profile import validate_person
 from ..validations.user import validate_email
 

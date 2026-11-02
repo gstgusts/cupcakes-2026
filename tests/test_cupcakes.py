@@ -6,10 +6,10 @@ from app.models import Cupcake, CupcakeType
 
 @pytest.fixture(scope="module")
 def cupcakes(app):
-    """Two types with one cupcake each; returns the type ids."""
+    """One cupcake each for two of the seeded types (migration 0004); returns the type ids."""
     with app.app_context():
-        classic = CupcakeType(name="Classic")
-        vegan = CupcakeType(name="Vegan")
+        classic = CupcakeType.query.filter_by(name="Classic").one()
+        vegan = CupcakeType.query.filter_by(name="Vegan").one()
         db.session.add_all([
             Cupcake(name="Vanilla Dream", description="Vanilla sponge with buttercream", cupcake_type=classic),
             Cupcake(name="Berry Bliss", description="Raspberry and oat milk", cupcake_type=vegan),

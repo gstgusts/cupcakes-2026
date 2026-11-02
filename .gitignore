@@ -10,3 +10,5 @@ __pycache__/
 node_modules/
 # Built by Tailwind (npm run build:css)
 app/static/css/
+LECTURE_PLAN.md
+RECAP.md

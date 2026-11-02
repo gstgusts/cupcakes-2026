@@ -29,3 +29,5 @@ class Cupcake(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    # A cupcake cannot be deleted while prediction models use it (ON DELETE RESTRICT in the database)
+    prediction_models = db.relationship("PredictionModel", back_populates="cupcake", passive_deletes="all")

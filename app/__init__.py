@@ -20,6 +20,7 @@ def create_app():
     from .web.prediction import predictions_bp
     from .web.prediction_model import prediction_models_bp
     from .web.profile import profile_bp
+    from .web.sales import sales_bp
     from .web.user import users_bp
     app.register_blueprint(auth_bp)  # /auth
     app.register_blueprint(cupcakes_bp)  # /cupcakes
@@ -27,6 +28,7 @@ def create_app():
     app.register_blueprint(prediction_models_bp)  # /prediction-models
     app.register_blueprint(predictions_bp)  # /predictions
     app.register_blueprint(plans_bp)  # /plans
+    app.register_blueprint(sales_bp)  # /sales
     app.register_blueprint(profile_bp)  # /profile
     app.register_blueprint(users_bp)  # /users (admin only)
 

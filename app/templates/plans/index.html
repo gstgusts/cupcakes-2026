@@ -21,6 +21,7 @@
               <th class="px-6 py-3 text-right font-bold">Recommended</th>
               <th class="px-6 py-3 text-right font-bold">Confirmed</th>
               <th class="px-6 py-3 font-bold">Confirmed by</th>
+              <th class="px-6 py-3 text-right font-bold">Sold</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-line">
@@ -35,10 +36,18 @@
                 </td>
                 <td class="px-6 py-4 text-right text-lg font-extrabold tabular-nums">{{ plan.quantity_confirmed }}</td>
                 <td class="px-6 py-4 text-muted">{{ plan.confirmed_by.name }} {{ plan.confirmed_by.surname }}</td>
+                <td class="whitespace-nowrap px-6 py-4 text-right tabular-nums">
+                  {% if plan.sales %}
+                    {{ plan.sales.quantity_sold }}
+                  {% else %}
+                    <a class="font-semibold text-brand hover:text-brand-dark"
+                       href="{{ url_for('sales.new', plan=plan.id) }}">Record sales</a>
+                  {% endif %}
+                </td>
               </tr>
             {% else %}
               <tr>
-                <td colspan="6" class="px-6 py-10 text-center text-muted">No plans yet.</td>
+                <td colspan="7" class="px-6 py-10 text-center text-muted">No plans yet.</td>
               </tr>
             {% endfor %}
           </tbody>

@@ -56,7 +56,9 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 - `/prediction-models/<id>/delete` – delete a prediction model after a confirmation dialog (`admin` role only, POST; not possible while it has predictions)
 - `/predictions` – predictions, newest date first (any logged-in user)
 - `/predictions/new` – calculate how many cupcakes to bake for a prediction model and date (any logged-in user)
-- `/predictions/<id>` – the recommended quantity and the calculation steps
+- `/predictions/<id>` – the recommended quantity, the calculation steps and the plan confirmation form
+- `/plans` – confirmed plans with recommended and confirmed quantity (any logged-in user)
+- `/plans/new` – confirm a plan from a prediction (POST from the prediction page; needs a profile, one plan per cupcake, store and date)
 - `/profile` – profile details of the logged-in user
 - `/users` – user list with search (`admin` role only)
 - `/users/new` – add a user (`admin` role only)
@@ -75,9 +77,9 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 
 ## Project layout
 
-- `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`, `Prediction`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
-- `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `prediction`, `prediction_model`, `profile`, `user`)
-- `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `prediction`, `prediction_model`, `profile`, `user`)
+- `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`, `Prediction`, `Plan`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
+- `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `user`)
+- `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `user`)
 - `app/services` – code used by the pages that is not a page itself:
   - `auth.py` – Keycloak client registration, `login_required` and `role_required`
   - `keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
@@ -163,6 +165,7 @@ pytest
 - `tests/test_prediction_model_pages.py` – prediction model list, add form and delete
 - `tests/test_forecast.py` – newsvendor calculation with the lecture examples
 - `tests/test_predictions.py` – creating predictions, result page and list
+- `tests/test_plans.py` – confirming plans and the plan list
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

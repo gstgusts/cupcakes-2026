@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Plans · Cupcake Business{% endblock %}
+{% block content %}
+  <div class="flex-1 bg-sky-soft px-6 py-12">
+    <div class="mx-auto max-w-6xl">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-extrabold">Plans</h1>
+          <p class="mt-1 text-muted">Confirmed numbers of cupcakes to bake, newest date first. Confirm a plan on a prediction's page.</p>
+        </div>
+        <a class="btn-primary py-2" href="{{ url_for('predictions.index') }}">Predictions</a>
+      </div>
+
+      <section class="card mt-8 overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="border-b border-line text-sm text-muted">
+            <tr>
+              <th class="px-6 py-3 font-bold">Date</th>
+              <th class="px-6 py-3 font-bold">Cupcake</th>
+              <th class="px-6 py-3 font-bold">Store</th>
+              <th class="px-6 py-3 text-right font-bold">Recommended</th>
+              <th class="px-6 py-3 text-right font-bold">Confirmed</th>
+              <th class="px-6 py-3 font-bold">Confirmed by</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            {% for plan in plans %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-6 py-4 tabular-nums">{{ plan.date.isoformat() }}</td>
+                <td class="px-6 py-4 font-bold">{{ plan.cupcake.name }}</td>
+                <td class="px-6 py-4">{{ plan.store.name }}</td>
+                <td class="px-6 py-4 text-right tabular-nums">
+                  <a class="font-semibold text-brand hover:text-brand-dark"
+                     href="{{ url_for('predictions.show', prediction_id=plan.prediction_id) }}">{{ plan.prediction.recommended_quantity }}</a>
+                </td>
+                <td class="px-6 py-4 text-right text-lg font-extrabold tabular-nums">{{ plan.quantity_confirmed }}</td>
+                <td class="px-6 py-4 text-muted">{{ plan.confirmed_by.name }} {{ plan.confirmed_by.surname }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" class="px-6 py-10 text-center text-muted">No plans yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+{% endblock %}

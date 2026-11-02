@@ -30,6 +30,33 @@
       </section>
 
       <section class="card p-8 sm:p-10">
+        <h2 class="text-2xl font-extrabold">Plan</h2>
+        {% if plan %}
+          <p class="mt-3">
+            Confirmed: bake <span class="text-2xl font-extrabold tabular-nums">{{ plan.quantity_confirmed }}</span> cupcakes.
+          </p>
+          <p class="mt-1 text-muted">
+            By {{ plan.confirmed_by.name }} {{ plan.confirmed_by.surname }} on {{ plan.confirmed_at.strftime('%Y-%m-%d %H:%M') }}
+            {%- if plan.prediction_id != prediction.id %},
+              based on the prediction of model "{{ plan.prediction.prediction_model.name }}"
+            {%- endif %}.
+          </p>
+        {% else %}
+          <p class="mt-1 text-muted">Confirm how many cupcakes will actually be baked. You can change the number.</p>
+          <form method="post" action="{{ url_for('plans.new') }}" class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-start" novalidate>
+            <input type="hidden" name="prediction" value="{{ prediction.id }}">
+            <div class="flex-1">
+              <label class="sr-only" for="quantity">Quantity to bake</label>
+              <input class="input {{ 'input-invalid' if plan_errors.quantity }}" id="quantity" name="quantity"
+                     value="{{ plan_form.quantity or '' }}" inputmode="numeric" autocomplete="off">
+              {% if plan_errors.quantity %}<p class="field-error">{{ plan_errors.quantity }}</p>{% endif %}
+            </div>
+            <button type="submit" class="btn-primary">Confirm plan</button>
+          </form>
+        {% endif %}
+      </section>
+
+      <section class="card p-8 sm:p-10">
         <h2 class="text-2xl font-extrabold">How it was calculated</h2>
         <p class="mt-1 text-muted">Prediction model "{{ model.name }}".</p>
 

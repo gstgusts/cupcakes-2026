@@ -14,3 +14,4 @@ tests/
 pytest.ini
 requirements-dev.txt
 deploy/
+react-app/

@@ -22,6 +22,7 @@ powershell -ExecutionPolicy Bypass -File .\start.ps1
 | Service  | URL                    | Notes                                             |
 |----------|------------------------|---------------------------------------------------|
 | Web      | http://localhost:5000  | Flask app; runs `flask db upgrade` on start       |
+| React    | http://localhost:5173  | React app (`react-app`), Vite dev server          |
 | Keycloak | http://localhost:8080  | Admin console: `admin` / `admin`                  |
 | Postgres | `localhost:5432`       | `cupcakes` / `cupcakes`, database `cupcakes`      |
 
@@ -71,6 +72,18 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 - `/users/new` – add a user (`admin` role only)
 - `/auth/login`, `/auth/callback`, `/auth/logout`
 
+## React app
+
+`react-app/` is a React 18 + TypeScript app built with Vite. It shows the prediction list and the "new prediction" form, using the JSON API below. `start.ps1` / `start.sh` start it in the `react-app` container: http://localhost:5173
+
+- **Login:** `keycloak-js` with the public client `cupcakes-spa` (PKCE) in `src/keycloak.ts`. The app logs in before React starts (`src/main.tsx`).
+- **API calls:** `src/api.ts` adds `Authorization: Bearer <token>` and refreshes the token when it expires within 30 seconds. `src/types.ts` has the TypeScript types of the API answers.
+- **Components:** `App.tsx` (header, loading the data), `PredictionForm.tsx`, `PredictionList.tsx`. Styling with Tailwind, same colours as the Flask app (`src/index.css`).
+- **Proxy:** the Vite dev server forwards `/api` to Flask (`vite.config.ts`, in Docker `API_PROXY_TARGET=http://web:5000`), so the browser stays on one origin and no CORS is needed.
+- **Live reload:** the source is mounted into the container, so saved changes appear in the browser at once. `node_modules` is in a Docker volume, not in the project folder.
+
+To run it without Docker (Node.js 22+): `cd react-app`, `npm install`, `npm run dev`. Check types and build with `npm run build`, lint with `npm run lint`.
+
 ## JSON API
 
 The React and Vue apps use a JSON API under `/api` (blueprint `app/api`, one module per entity like `app/web`).
@@ -105,6 +118,7 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 ## Project layout
 
 - `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`, `Prediction`, `Plan`, `Sales`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
+- `react-app` – React + TypeScript app (Vite) using the JSON API
 - `app/api` – JSON API for the React and Vue apps (`prediction`, `prediction_model`)
 - `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `sales`, `user`)
 - `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `sales`, `user`)

@@ -34,6 +34,10 @@ def create_app():
     app.register_blueprint(users_bp)  # /users (admin only)
     app.register_blueprint(api_bp)  # /api (JSON for the React and Vue apps)
 
+    # CLI commands: flask --app run seed-demo
+    from .commands.seed_demo import seed_demo
+    app.cli.add_command(seed_demo)
+
     @app.context_processor
     def inject_user():
         return {"current_user": current_user(), "is_admin": has_role("admin")}

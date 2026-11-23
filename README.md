@@ -23,6 +23,7 @@ powershell -ExecutionPolicy Bypass -File .\start.ps1
 |----------|------------------------|---------------------------------------------------|
 | Web      | http://localhost:5000  | Flask app; runs `flask db upgrade` on start       |
 | React    | http://localhost:5173  | React app (`react-app`), Vite dev server          |
+| Vue      | http://localhost:5174  | Vue app (`vue-app`), Vite dev server              |
 | Keycloak | http://localhost:8080  | Admin console: `admin` / `admin`                  |
 | Postgres | `localhost:5432`       | `cupcakes` / `cupcakes`, database `cupcakes`      |
 
@@ -84,6 +85,26 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 
 To run it without Docker (Node.js 22+): `cd react-app`, `npm install`, `npm run dev`. Check types and build with `npm run build`, lint with `npm run lint`.
 
+## Vue app
+
+`vue-app/` is the same app in Vue 3 + TypeScript (Vite, Composition API with `<script setup lang="ts">`), started by the start scripts in the `vue-app` container: http://localhost:5174
+
+The file structure is the same as in `react-app`, so the two can be compared side by side:
+
+| File | React | Vue |
+|---|---|---|
+| `src/types.ts`, `src/api.ts`, `src/keycloak.ts`, `src/index.css` | the same files in both apps | the same files in both apps |
+| start | `src/main.tsx` | `src/main.ts` |
+| components | `App.tsx`, `PredictionForm.tsx`, `PredictionList.tsx` (JSX) | `App.vue`, `PredictionForm.vue`, `PredictionList.vue` (template) |
+| state | `useState` | `ref()` |
+| loading data | `useEffect` | `onMounted` |
+| form fields | `value` + `onChange` | `v-model` |
+| child to parent | callback prop `onCreated` | event `@created` (`defineEmits`) |
+
+Differences from `react-app` that come from the official Vite templates: the type check uses `vue-tsc` with TypeScript 6 (`vue-tsc` does not support TypeScript 7 yet), and there is no linter.
+
+To run it without Docker (Node.js 22+): `cd vue-app`, `npm install`, `npm run dev`. Check types and build with `npm run build`.
+
 ## JSON API
 
 The React and Vue apps use a JSON API under `/api` (blueprint `app/api`, one module per entity like `app/web`).
@@ -119,6 +140,7 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 
 - `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`, `Prediction`, `Plan`, `Sales`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
 - `react-app` – React + TypeScript app (Vite) using the JSON API
+- `vue-app` – the same app in Vue + TypeScript (Vite)
 - `app/api` – JSON API for the React and Vue apps (`prediction`, `prediction_model`)
 - `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `sales`, `user`)
 - `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `sales`, `user`)

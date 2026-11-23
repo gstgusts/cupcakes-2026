@@ -15,3 +15,4 @@ pytest.ini
 requirements-dev.txt
 deploy/
 react-app/
+vue-app/

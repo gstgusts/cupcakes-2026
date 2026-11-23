@@ -81,6 +81,8 @@ The React and Vue apps use a JSON API under `/api` (blueprint `app/api`, one mod
 | `GET /api/predictions` | predictions, newest date first, with cupcake, store, model, date and recommended quantity |
 | `POST /api/predictions` | body `{"prediction_model_id": "...", "date": "YYYY-MM-DD"}`. **201** with the new prediction, **400** with `{"errors": {field: message}}`, **409** if the model already has a prediction for that date |
 
+**Documentation:** http://localhost:5000/api/docs (Swagger UI) shows the API described in `app/api/openapi.yaml` (served at `/api/openapi.yaml`). To try the calls, either log in to the Flask app in the same browser first, or click **Authorize** and paste an access token of the `cupcakes-spa` client. When you add or change an endpoint, update `openapi.yaml` too: `tests/test_api_docs.py` fails if a route or a response field is missing from it.
+
 Login (`app/services/token_auth.py`):
 
 - **Browser apps** send a Keycloak access token: `Authorization: Bearer <token>`. The API checks the signature with the realm's public keys (JWKS, downloaded once and cached for an hour, again when Keycloak uses a new key), the issuer, the expiry, that it is an access token (`typ` = `Bearer`) and that it was issued to the `cupcakes-spa` client (`azp`).
@@ -195,6 +197,7 @@ pytest
 - `tests/test_plans.py` – confirming plans and the plan list
 - `tests/test_sales.py` – recording sales and the sales list
 - `tests/test_api.py` – JSON API endpoints, access token checks (with a test signing key instead of Keycloak) and errors
+- `tests/test_api_docs.py` – `openapi.yaml` describes every API route and response field, and the Swagger UI page works
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

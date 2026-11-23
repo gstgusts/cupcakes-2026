@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Cupcakes API
+  version: "1.0"
+  description: |
+    JSON API for the React and Vue apps (and the Flask pages).
+
+    **Login:** send a Keycloak access token of the `cupcakes-spa` client as
+    `Authorization: Bearer <token>` (button **Authorize**). If you are logged in to the
+    Flask app in this browser, "Try it out" also works without a token (session cookie).
+
+    Keep this file in step with `app/api`: a test checks that every route is described here.
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+  - sessionCookie: []
+
+paths:
+  /api/prediction-models:
+    get:
+      summary: List prediction models
+      description: Newsvendor parameters for one cupcake at one store, sorted by cupcake, store and name.
+      tags: [Prediction models]
+      responses:
+        "200":
+          description: All prediction models
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PredictionModel" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/predictions:
+    get:
+      summary: List predictions
+      description: Newest date first.
+      tags: [Predictions]
+      responses:
+        "200":
+          description: All predictions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Prediction" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      summary: Create a prediction
+      description: |
+        Calculates how many cupcakes to bake for a prediction model and date
+        (newsvendor model, Q = d + z·σ) and saves it. One prediction per model and date.
+      tags: [Predictions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewPrediction" }
+            example:
+              prediction_model_id: 13b723ed-bd4f-4984-a901-1f37b3ee7bad
+              date: "2027-01-15"
+      responses:
+        "201":
+          description: Created. `Location` is the Flask page of the new prediction.
+          headers:
+            Location:
+              schema: { type: string, example: /predictions/94fef43f-e4c8-4fe3-b480-b634b7be4ed2 }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Prediction" }
+        "400":
+          description: Validation errors, or the body is not a JSON object
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrors" }
+              example:
+                errors:
+                  prediction_model_id: Choose a prediction model.
+                  date: Enter a valid date.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409":
+          description: The model already has a prediction for this date
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrors" }
+              example:
+                errors:
+                  date: This model already has a prediction for this date.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Keycloak access token of the cupcakes-spa client (realm cupcakes)
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Login session of the Flask app (sent by the browser automatically)
+
+  responses:
+    Unauthorized:
+      description: No valid login (missing, expired or wrong token)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example: { error: Login required. }
+
+  schemas:
+    Ref:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+
+    PredictionModel:
+      type: object
+      required: [id, name, cupcake, store, average_demand, demand_std_dev,
+                 production_cost, selling_price, salvage_value, critical_ratio]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, example: Case 3 }
+        cupcake: { $ref: "#/components/schemas/Ref" }
+        store: { $ref: "#/components/schemas/Ref" }
+        average_demand: { type: number, description: "d: cupcakes per day", example: 150 }
+        demand_std_dev: { type: number, description: "σ: standard deviation of daily demand", example: 30 }
+        production_cost: { type: number, description: "c", example: 10 }
+        selling_price: { type: number, description: "p", example: 15 }
+        salvage_value: { type: number, description: "s", example: 2 }
+        critical_ratio: { type: number, description: "CR = (p − c) / (p − s)", example: 0.3846 }
+
+    Prediction:
+      type: object
+      required: [id, date, recommended_quantity, prediction_model, cupcake, store, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        date: { type: string, format: date, example: "2027-01-15" }
+        recommended_quantity: { type: integer, description: "Cupcakes to bake", example: 141 }
+        prediction_model: { $ref: "#/components/schemas/Ref" }
+        cupcake: { $ref: "#/components/schemas/Ref" }
+        store: { $ref: "#/components/schemas/Ref" }
+        created_at: { type: string, format: date-time }
+
+    NewPrediction:
+      type: object
+      required: [prediction_model_id, date]
+      properties:
+        prediction_model_id: { type: string, format: uuid }
+        date: { type: string, format: date, description: "YYYY-MM-DD" }
+
+    ValidationErrors:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: object
+          description: Message per field (prediction_model_id, date, or request for a body that is not JSON)
+          additionalProperties: { type: string }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }

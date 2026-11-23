@@ -42,6 +42,23 @@ The realm has two clients:
 
 The realm is imported only on Keycloak's first start. After changing the realm file, reset it with `docker compose down -v` (this also wipes the database).
 
+## Demo data
+
+With the containers running, add demo cupcakes, prediction models and predictions:
+
+```sh
+./seed-demo.sh        # macOS/Linux/Git Bash
+.\seed-demo.ps1       # Windows PowerShell
+```
+
+It runs `flask --app run seed-demo` in the `web` container. The data is in `app/commands/seed_demo.py`:
+
+- 5 cupcakes, one or two per type
+- 8 prediction models at both stores, including the lecture examples "Case 3" (bake 141) and "Slide 9" (bake 142)
+- a prediction for each model for today and the next 6 days
+
+Running it again adds only what is missing. After `docker compose down -v`, run it again to get the demo data back.
+
 ## How login works
 
 1. `/auth/login` redirects the browser to Keycloak (authorization code flow with PKCE, confidential client `cupcakes-web`).
@@ -174,6 +191,7 @@ pytest
 - `tests/test_predictions.py` – creating predictions, result page and list
 - `tests/test_plans.py` – confirming plans and the plan list
 - `tests/test_sales.py` – recording sales and the sales list
+- `tests/test_seed_demo.py` – the demo data command adds the data and can run again
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

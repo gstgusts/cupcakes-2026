@@ -32,6 +32,10 @@ def create_app():
     app.register_blueprint(profile_bp)  # /profile
     app.register_blueprint(users_bp)  # /users (admin only)
 
+    # CLI commands: flask --app run seed-demo
+    from .commands.seed_demo import seed_demo
+    app.cli.add_command(seed_demo)
+
     @app.context_processor
     def inject_user():
         return {"current_user": current_user(), "is_admin": has_role("admin")}

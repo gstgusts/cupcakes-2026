@@ -71,6 +71,24 @@ The realm is imported only on Keycloak's first start. After changing the realm f
 - `/users/new` – add a user (`admin` role only)
 - `/auth/login`, `/auth/callback`, `/auth/logout`
 
+## JSON API
+
+The React and Vue apps use a JSON API under `/api` (blueprint `app/api`, one module per entity like `app/web`).
+
+| Method and URL | Answer |
+|---|---|
+| `GET /api/prediction-models` | prediction models with cupcake, store, d, σ, c, p, s and critical ratio |
+| `GET /api/predictions` | predictions, newest date first, with cupcake, store, model, date and recommended quantity |
+| `POST /api/predictions` | body `{"prediction_model_id": "...", "date": "YYYY-MM-DD"}`. **201** with the new prediction, **400** with `{"errors": {field: message}}`, **409** if the model already has a prediction for that date |
+
+Login (`app/services/token_auth.py`):
+
+- **Browser apps** send a Keycloak access token: `Authorization: Bearer <token>`. The API checks the signature with the realm's public keys (JWKS, downloaded once and cached for an hour, again when Keycloak uses a new key), the issuer, the expiry, that it is an access token (`typ` = `Bearer`) and that it was issued to the `cupcakes-spa` client (`azp`).
+- **Flask pages** can call the same API with their login session.
+- Without a valid login the API answers **401** `{"error": "..."}`. Unknown `/api` URLs and methods answer with JSON too.
+
+`POST` accepts only JSON bodies. A browser cannot send JSON to another site without CORS permission, which also protects the session login against cross-site requests.
+
 ## Adding users (Keycloak Admin API)
 
 There is no self-registration: an admin adds users on `/users/new`.
@@ -85,10 +103,12 @@ The app calls the Admin API as the service account of the `cupcakes-web` client 
 ## Project layout
 
 - `app/models` – SQLAlchemy models with UUID ids: `User`, `CupcakeType`, `Cupcake`, `CupcakeImage`, `Store`, `PredictionModel`, `Prediction`, `Plan`, `Sales`. Tables are plural snake_case; constraint names follow PostgreSQL defaults (`<table>_pkey`, `<table>_<column>_key`, `<table>_<column>_fkey`, `<table>_<column>_idx`)
+- `app/api` – JSON API for the React and Vue apps (`prediction`, `prediction_model`)
 - `app/web` – blueprints (`auth`, `cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `sales`, `user`)
 - `app/validations` – form validation, one module per entity (`cupcake`, `cupcake_image`, `plan`, `prediction`, `prediction_model`, `profile`, `sales`, `user`)
 - `app/services` – code used by the pages that is not a page itself:
   - `auth.py` – Keycloak client registration, `login_required` and `role_required`
+  - `token_auth.py` – login for the JSON API: Keycloak access token (Bearer) or Flask session
   - `keycloak_admin.py` – Keycloak Admin REST API client (find, create, delete users)
   - `forecast.py` – newsvendor calculation: critical ratio, z-score, recommended quantity
 - `app/templates` – Jinja templates styled with Tailwind
@@ -174,6 +194,7 @@ pytest
 - `tests/test_predictions.py` – creating predictions, result page and list
 - `tests/test_plans.py` – confirming plans and the plan list
 - `tests/test_sales.py` – recording sales and the sales list
+- `tests/test_api.py` – JSON API endpoints, access token checks (with a test signing key instead of Keycloak) and errors
 - `tests/test_pages.py` – pages through the Flask test client: login redirects, profile, admin-only user list and user creation
 
 GitHub Actions (`.github/workflows/build.yml`) runs the tests on every push and pull request, then builds the Docker image, smoke-tests it and pushes it to `ghcr.io` (on `main` only).

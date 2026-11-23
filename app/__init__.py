@@ -12,7 +12,8 @@ def create_app():
     db.init_app(app)
     init_oauth(app)
 
-    # Register web blueprints (split by entity)
+    # Register the web blueprints (split by entity) and the JSON API
+    from .api import api_bp
     from .web.auth import auth_bp
     from .web.cupcake import cupcakes_bp
     from .web.cupcake_image import cupcake_images_bp
@@ -31,6 +32,7 @@ def create_app():
     app.register_blueprint(sales_bp)  # /sales
     app.register_blueprint(profile_bp)  # /profile
     app.register_blueprint(users_bp)  # /users (admin only)
+    app.register_blueprint(api_bp)  # /api (JSON for the React and Vue apps)
 
     @app.context_processor
     def inject_user():

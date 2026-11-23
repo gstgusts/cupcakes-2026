@@ -19,3 +19,5 @@ class Config:
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "cupcakes")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "cupcakes-web")
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "cupcakes-web-secret")
+    # Public client of the React and Vue apps; the API accepts only access tokens issued to it
+    KEYCLOAK_SPA_CLIENT_ID = os.getenv("KEYCLOAK_SPA_CLIENT_ID", "cupcakes-spa")

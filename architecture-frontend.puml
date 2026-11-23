@@ -1,0 +1,63 @@
+@startuml architecture-frontend
+title Cupcakes: Flask pages, React and Vue using one API and one Keycloak
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowFontSize 11
+skinparam NodeBackgroundColor #F7FAFC
+skinparam ComponentBackgroundColor #FFFFFF
+skinparam DatabaseBackgroundColor #FFFFFF
+
+actor "User" as user
+
+node "Browser" as browser {
+  component "Flask pages\nhttp://localhost:5000\n(HTML from the server)" as pages_ui
+  component "React app\nhttp://localhost:5173\n(TypeScript, keycloak-js)" as react_ui
+  component "Vue app\nhttp://localhost:5174\n(TypeScript, keycloak-js)" as vue_ui
+}
+
+node "Docker Compose" as docker {
+  node "react-app\n(Vite dev server :5173)" as react_vite {
+    component "proxy /api" as react_proxy
+  }
+  node "vue-app\n(Vite dev server :5174)" as vue_vite {
+    component "proxy /api" as vue_proxy
+  }
+  node "web\n(Flask :5000)" as web {
+    component "Pages\n(Jinja templates)" as pages
+    component "API /api/...\n(JSON)" as api
+  }
+  node "keycloak\n(:8080)" as keycloak {
+    component "Realm cupcakes\nclients: cupcakes-web,\ncupcakes-spa" as realm
+  }
+  database "db\n(PostgreSQL :5432)" as db
+}
+
+user --> browser
+
+' Flask pages: server-rendered, logged in with a session cookie
+pages_ui --> pages : HTML pages,\nsession cookie
+pages ..> realm : login: cupcakes-web\n(confidential, with secret)
+
+' React and Vue: log in in the browser, call the API with the access token.
+' Both apps log in the same way, so only one login arrow is labelled.
+react_ui ..> realm
+vue_ui ..> realm : login: cupcakes-spa\n(public, PKCE)\n-> access token (JWT)
+react_ui --> react_proxy : fetch /api/...\n+ Bearer token
+vue_ui --> vue_proxy : fetch /api/...\n+ Bearer token
+react_proxy --> api : forwards /api
+vue_proxy --> api : forwards /api
+
+' The API checks the token signature with Keycloak's public keys
+api ..> realm : public keys (JWKS),\nfetched once and cached
+
+pages --> db : SQL
+api --> db : SQL
+
+legend right
+  solid arrow: data requests
+  dashed arrow: login and token checks
+  The Vite proxy keeps the browser on one origin, so no CORS is needed.
+endlegend
+
+@enduml

@@ -35,6 +35,11 @@ Sample users in the `cupcakes` realm (see `keycloak/realm-cupcakes.json`):
 
 Realm roles are `admin` and `user`. Every new user gets `user` automatically (realm default role). The roles are included in the ID token as the `roles` claim.
 
+The realm has two clients:
+
+- `cupcakes-web` – confidential client (with a secret) used by the Flask app
+- `cupcakes-spa` – public client (no secret, PKCE) for browser apps such as React and Vue, allowed on `http://localhost:5173` and `http://localhost:5174`
+
 The realm is imported only on Keycloak's first start. After changing the realm file, reset it with `docker compose down -v` (this also wipes the database).
 
 ## How login works

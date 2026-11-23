@@ -20,4 +20,4 @@ def routing_error(e):
 
 
 # The routes register themselves on api_bp (one module per entity, like app/web)
-from . import prediction, prediction_model  # noqa: E402,F401
+from . import docs, prediction, prediction_model  # noqa: E402,F401

@@ -7,6 +7,7 @@ try {
     Write-Host ""
     Write-Host "Web:      http://localhost:5000"
     Write-Host "React:    http://localhost:5173"
+    Write-Host "Vue:      http://localhost:5174"
     Write-Host "Keycloak: http://localhost:8080  (admin / admin)"
     Write-Host "Stop:     docker compose down"
 }

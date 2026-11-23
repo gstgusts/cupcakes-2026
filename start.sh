@@ -8,5 +8,6 @@ docker compose up -d --build
 echo ""
 echo "Web:      http://localhost:5000"
 echo "React:    http://localhost:5173"
+echo "Vue:      http://localhost:5174"
 echo "Keycloak: http://localhost:8080  (admin / admin)"
 echo "Stop:     docker compose down"

@@ -74,6 +74,27 @@ services:
     depends_on:
       - web
 
+  # Vue app (Vite dev server): http://localhost:5174. Set up the same way as react-app.
+  vue-app:
+    image: node:22-alpine
+    restart: unless-stopped
+    working_dir: /app
+    # Installs the packages from package-lock.json (only what changed), then starts the dev server
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    environment:
+      # Vite forwards /api to the Flask app over the Docker network
+      API_PROXY_TARGET: http://web:5000
+      # Docker on Windows does not pass file change events into the container
+      VITE_USE_POLLING: "true"
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./vue-app:/app
+      # Keeps node_modules out of the project folder
+      - vue-node-modules:/app/node_modules
+    depends_on:
+      - web
+
   # One-off Tailwind build into app/static/css/app.css for running Flask locally.
   # Not started by "docker compose up"; run with: docker compose run --rm css
   css:
@@ -91,3 +112,4 @@ volumes:
   keycloak-data:
   css-node-modules:
   react-node-modules:
+  vue-node-modules:
